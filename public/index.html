@@ -767,6 +767,7 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   const rollbackVisualStyle=document.createElement('style');rollbackVisualStyle.textContent='.product-sheet-content .product-visuals{display:flex;grid-template-columns:none;height:285px;background:transparent}.product-sheet-content .product-visuals>div{flex:1 1 0;min-width:0;min-height:0;padding-top:0}.product-sheet-content .product-visuals>div::before{display:none}.product-sheet-content .product-visuals>div+div{border-left:0}.product-sheet-content .product-visuals:has(.drawing .product-asset-placeholder) .photo{flex-basis:100%}.product-sheet-content .product-visuals:has(.drawing .product-asset-placeholder) .drawing{display:none}.product-visuals .custom-visual{inset:0}.product-asset-placeholder{inset:0}';document.head.append(rollbackVisualStyle);
   const controlStyle=document.createElement('style');controlStyle.textContent='.product-sheet-content .gmt{position:relative}.brand-drag-zone{position:relative;display:inline-block;line-height:0}.brand-drag-zone .brand-image{width:100%;height:auto}.brand-resize-handle{position:absolute;right:-8px;bottom:-8px;width:15px;height:15px;border-right:3px solid #1676a2;border-bottom:3px solid #1676a2;background:#ffffffcc;cursor:nwse-resize;touch-action:none;z-index:3}.brand-resize-handle::after{content:"";position:absolute;inset:-6px}.product-image-layer{position:absolute;inset:0;z-index:2;transform-origin:center center}.product-image-layer .product-image-resize-handle{position:absolute;right:3px;bottom:3px;width:15px;height:15px;border-right:3px solid #1676a2;border-bottom:3px solid #1676a2;background:#ffffffcc;cursor:nwse-resize;touch-action:none;z-index:8}.product-image-layer:hover .product-image-resize-handle{display:block}.product-image-resize-handle{display:none}.product-sheet-content .drawing .product-asset-placeholder{background:#fff;font-size:0}.product-sheet-content .drawing .product-asset-placeholder b,.product-sheet-content .drawing .product-asset-placeholder span{display:none}.product-sheet{position:relative;padding-bottom:125px!important}.product-footer-text{position:absolute;left:45px;right:45px;bottom:25px;min-height:70px;margin:0;display:grid;grid-template-columns:1fr 1fr auto;align-items:center;gap:22px;padding:4px 8px;color:#333;font:10px/1.32 SimSun,serif}.footer-edit-text{min-height:55px;white-space:pre-wrap;outline:0;border:1px solid transparent;padding:3px 5px}.footer-edit-text:focus{border-color:#1676a2;background:#fffbe8}.footer-qr{position:relative;display:flex;align-items:center;justify-content:center}.footer-qr img{display:block;width:100%;height:100%;object-fit:contain}.qr-resize-handle{position:absolute;right:-7px;bottom:-7px;width:15px;height:15px;border-right:3px solid #1676a2;border-bottom:3px solid #1676a2;background:#ffffffcc;cursor:nwse-resize;touch-action:none}.footer-qr:hover .qr-resize-handle{display:block}.qr-resize-handle{display:none}.footer-edit-hint{position:absolute;left:45px;right:45px;bottom:7px;font-size:10px;color:#74818a;text-align:center}@media print{.brand-resize-handle,.product-image-resize-handle,.qr-resize-handle,.footer-edit-hint{display:none!important}.footer-edit-text{border:0!important;background:transparent!important}.print-page{position:relative;min-height:1000px;padding-bottom:110px}.print-page .product-footer-text{left:0;right:0;bottom:8mm}}';document.head.append(controlStyle);
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const wbPdfStyle=document.createElement('style');wbPdfStyle.textContent='.wb-pdf-container{background:#eef1f4;padding:10px}.wb-pdf-container canvas,.wb-print-pdf canvas{display:block;width:100%;max-width:760px;height:auto;margin:0 auto 10px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.15)}@media print{.wb-pdf-container{background:none;padding:0}.wb-print-pdf{height:auto!important;max-height:none!important;overflow:visible!important;padding:0}.wb-print-pdf canvas{width:100%;max-width:none;box-shadow:none;margin:0;break-after:page}}';document.head.append(wbPdfStyle);
   const catalogPhoto=code=>['H1','H2','H3','PV1','L1','L2'].includes(String(code))?'assets/product-'+code+'.png':null;
   const footerDefaults=()=>({cn:'上海东铁贸易有限公司\n上海东铁五金有限公司\n地址：上海市松江区稽吉业路288号\n电话：021-64598888　传真：021-57793887\n网址：www.gmt-cn.com',en:'Shanghai Eastern Iron Trading Co.,Ltd.\nShanghai Eastern Iron Hardware Co.,Ltd.\nA：No. 288, Jinye Rd. Songjiang District,\nShanghai, China\nP：021-64598888　F：021-57793887\nW：www.gmt-cn.com'});
   const blank=()=>({brand:'GMT',brandImage:null,name:'',variants:[],features:[],footer:'',footerImage:null,footerBlocks:footerDefaults(),qrImage:null,photo:null,drawing:null,imageLayout:{}});
@@ -849,6 +850,31 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   function bindProductImages(){
     document.querySelectorAll('[data-product-image]').forEach(layerEl=>{const key=layerEl.dataset.productImage;const page=pageFor(caseData.selectedPage);page.imageLayout??={};const saved=page.imageLayout[key]||{};const state=Number.isFinite(Number(saved.scale))?saved:(page.imageLayout[key]={x:0,y:0,scale:1});let drag=null;layerEl.addEventListener('pointerdown',event=>{if(event.target.closest('.product-image-resize-handle'))return;drag={x:Number(state.x)||0,y:Number(state.y)||0,startX:event.clientX,startY:event.clientY};layerEl.setPointerCapture?.(event.pointerId);event.preventDefault()});layerEl.addEventListener('pointermove',event=>{if(!drag)return;state.x=drag.x+event.clientX-drag.startX;state.y=drag.y+event.clientY-drag.startY;layerEl.style.transform='translate('+state.x+'px,'+state.y+'px) scale('+(Number(state.scale)||1)+')'});layerEl.addEventListener('pointerup',()=>{if(!drag)return;drag=null;page.imageLayout[key]=state;try{projectStore.save(caseData)}catch(error){workbench.notice('图片位置保存失败：'+error.message)}});layerEl.addEventListener('wheel',event=>{event.preventDefault();state.scale=Math.min(4,Math.max(.3,(Number(state.scale)||1)*(event.deltaY<0?1.08:.925)));page.imageLayout[key]=state;layerEl.style.transform='translate('+(Number(state.x)||0)+'px,'+(Number(state.y)||0)+'px) scale('+state.scale+')';try{projectStore.save(caseData)}catch(error){workbench.notice('图片大小保存失败：'+error.message)}},{passive:false});const handle=layerEl.querySelector('.product-image-resize-handle');handle?.addEventListener('pointerdown',event=>{event.preventDefault();event.stopPropagation();const startX=event.clientX,startY=event.clientY,start=Number(state.scale)||1;handle.setPointerCapture?.(event.pointerId);const move=moveEvent=>{state.scale=Math.min(4,Math.max(.3,start+(moveEvent.clientX-startX+moveEvent.clientY-startY)/240));layerEl.style.transform='translate('+(Number(state.x)||0)+'px,'+(Number(state.y)||0)+'px) scale('+state.scale+')'};const finish=()=>{handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',finish);page.imageLayout[key]=state;try{projectStore.save(caseData)}catch(error){workbench.notice('图片大小保存失败：'+error.message)}};handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',finish)});});
   }
+  function loadPdfJs(){
+    if(window.pdfjsLib)return Promise.resolve();
+    return new Promise((resolve,reject)=>{
+      const s=document.createElement('script');s.src='vendor/pdf.min.js';
+      s.onload=()=>{try{window.pdfjsLib.GlobalWorkerOptions.workerSrc='vendor/pdf.worker.min.js';}catch(e){};resolve();};
+      s.onerror=()=>reject(new Error('pdf.js 加载失败'));
+      document.head.append(s);
+    });
+  }
+  async function renderPdfInto(container,sourceFile){
+    if(!container||!sourceFile)return;
+    try{
+      await loadPdfJs();
+      const bytes=sourceFile.data?Uint8Array.from(atob(String(sourceFile.data).split(',')[1]),c=>c.charCodeAt(0)):new Uint8Array(await (await fetch(sourceFile.url)).arrayBuffer());
+      const pdf=await window.pdfjsLib.getDocument({data:bytes}).promise;
+      container.innerHTML='';
+      for(let n=1;n<=pdf.numPages;n++){
+        const p=await pdf.getPage(n),viewport=p.getViewport({scale:1.5});
+        const canvas=document.createElement('canvas');
+        canvas.className='wb-pdf-page';canvas.width=viewport.width;canvas.height=viewport.height;
+        container.appendChild(canvas);
+        await p.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+      }
+    }catch(e){container.innerHTML='<p style="color:#c00">PDF 加载失败：'+esc(e.message||e)+'</p>';}
+  }
   function renderCurrent(){
     if(!window.workbench||workbench.step!==3)return;
     ensurePages(caseData);
@@ -856,7 +882,11 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
     documentArea.className='document product-sheet';
     const missing=(caseData._missingPages||[]);
     const banner=missing.length?'<div style="margin:0 0 10px;padding:8px 12px;background:#fff3cd;border:1px solid #ffe08a;border-radius:4px;font:13px/1.5 sans-serif">⚠ 以下 '+missing.length+' 个 BOM 料号暂无产品单页，将输出占位页：'+esc(missing.join('、'))+'<br>请到「产品单页数据库」导入 PDF 并在编辑页填写对应「绑定 BOM 料号」。</div>':'';
-    documentArea.innerHTML=banner+pageHtml(caseData.selectedPage,true);
+    const code=caseData.selectedPage,page=pageFor(code),hasPdf=!!(page&&page.sourceFile);
+    const codes=caseData.products.map(p=>p[0]);
+    const switcher='<div class="page-switcher"><label>选择产品 <select id="page-select">'+codes.map(item=>'<option value="'+esc(item)+'"'+(item===code?' selected':'')+'>'+esc(item)+' · '+esc(productFor(item)?.[1]||item)+'</option>').join('')+'</select></label><button type="button" id="edit-page-data">编辑当前单页</button></div>';
+    documentArea.innerHTML=banner+switcher+(hasPdf?'<div class="wb-pdf-container" data-wb-pdf></div>':pageHtml(code,false));
+    if(hasPdf)renderPdfInto(documentArea.querySelector('[data-wb-pdf]'),page.sourceFile);
     const select=document.getElementById('page-select');
     if(select)select.onchange=event=>{caseData.selectedPage=event.target.value;try{projectStore.save(caseData)}catch(error){workbench.notice('产品页保存失败：'+error.message)}renderCurrent()};
     document.getElementById('edit-page-data')?.addEventListener('click',()=>document.getElementById('edit-data')?.click());
@@ -871,11 +901,15 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
     const documentArea=document.getElementById('document');
     const savedSelected=caseData.selectedPage;
     documentArea.className='document product-sheet print-product-pages';
-    documentArea.innerHTML=caseData.products.map(product=>'<section class="print-page">'+pageHtml(product[0],false)+'</section>').join('');
+    const sections=caseData.products.map(product=>{
+      const code=product[0],page=pageFor(code);
+      return (page&&page.sourceFile)?'<section class="print-page wb-print-pdf" data-print-pdf></section>':'<section class="print-page">'+pageHtml(code,false)+'</section>';
+    }).join('');
+    documentArea.innerHTML=sections;
     let style=document.getElementById('print-size');if(!style){style=document.createElement('style');style.id='print-size';document.head.append(style)}style.textContent='@media print{@page{size:A4 portrait;margin:8mm}.print-page{position:relative;height:279mm;min-height:0!important;max-height:279mm;overflow:hidden;box-sizing:border-box;break-after:page;page-break-after:always;break-inside:avoid;page-break-inside:avoid}.print-page *{break-inside:avoid;page-break-inside:avoid}.print-page:last-child{break-after:auto;page-break-after:auto}.print-product-pages{width:100%!important;max-width:none!important;min-height:0!important;padding:0!important}.print-product-pages .product-sheet-content{width:680px;margin:auto}}';
-    window.print();
-    caseData.selectedPage=savedSelected;
-    renderCurrent();
+    const pdfTargets=[];
+    documentArea.querySelectorAll('[data-print-pdf]').forEach((el,i)=>{const code=caseData.products[i][0];pdfTargets.push({el,src:pageFor(code)?.sourceFile});});
+    (async()=>{for(const t of pdfTargets){await renderPdfInto(t.el,t.src);}window.print();caseData.selectedPage=savedSelected;renderCurrent();})();
   }
   const readPath=(root,path)=>path.split('.').reduce((value,key)=>value?.[key],root);
   function adaptProductEditor(){

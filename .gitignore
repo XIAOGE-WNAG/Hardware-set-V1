@@ -7,3 +7,9 @@ node_modules/
 *.key
 *.pem
 *.log
+data/*.db
+data/*.db-*
+data/*.key
+public/uploads/*
+uploads/
+backups/

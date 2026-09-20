@@ -47,7 +47,11 @@
     const doors=(state.doors||[]).map((d,i)=>[Number(d.seq)||i+1,d.floor||'',d.door_number||'',d.door_model||'',d.room_function||'',d.width??'/',d.height??'/',d.thickness??'/',Number(d.qty)||1,d.material||'',d.door_type||'',setById.get(d.set_id)||'',d.section||'',d.remark||'']);
     const productRows=products.map(p=>[p.sku_code,p.name,p.model||'',Array.isArray(p.specs?.features)?p.specs.features:(p.specs?.description?[p.specs.description]:[]),p.finish||'',p.unit||'',0,null,p.price||'', '',p.main_image_url||null,p.brand||'']);
     const page=settings.page||window.caseData?.page||{brand:'',name:'',variants:[],features:[],footer:'',photo:null,drawing:null};
-    return {doors,sets,products:productRows,project:{...settings,name:source.name||settings.name||'未命名项目',id:source.id},page,productDatabase:productRows.map(p=>[p[0],p[3].join('\n'),p[5],p[11]])};
+    // 规范化项目元信息：保证 name/issued/technician/area 为字符串、total 为非负整数，避免服务端水合后校验失败
+    const totalDoors=doors.reduce((n,r)=>n+(Number(r[8])||0),0);
+    const project=Object.assign({},settings,{id:source.id,name:source.name||settings.name||'未命名项目',issued:String(settings.issued??''),technician:String(settings.technician??''),area:String(settings.area??''),total:Number.isFinite(Number(settings.total))?Number(settings.total):totalDoors});
+    delete project.page;
+    return {doors,sets,products:productRows,project,page,productDatabase:productRows.map(p=>[p[0],p[3].join('\n'),p[5],p[11]])};
   }
   async function hydrateState() {
     if(!token()||!window.hwApi||!window.caseData)return;

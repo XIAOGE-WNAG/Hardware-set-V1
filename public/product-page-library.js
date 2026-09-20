@@ -207,16 +207,28 @@
     const files=[...e.target.files];if(!files.length)return;
     try{
       const imported={};
+      const entries=[];
       for(const file of files){
         if(!/\.(pdf|docx?)$/i.test(file.name))throw Error(file.name+'：仅支持 PDF、DOC 或 DOCX');
         const code=(file.name.replace(/\.(pdf|docx?)$/i,'').replace(/[^\w\-一-龥 ]+/g,'-').trim()||'产品单页').slice(0,80);
         const sameFile=Object.entries(db()).find(([,page])=>page?.sourceFile?.name===file.name)?.[0]||Object.entries(imported).find(([,page])=>page?.sourceFile?.name===file.name)?.[0];
         let key=sameFile||code,n=2;while(!sameFile&&(own(db(),key)||own(imported,key)))key=code+'-'+n++;
-        if(/\.pdf$/i.test(file.name))imported[key]=await parsePdf(file);
-        else if(/\.docx$/i.test(file.name))imported[key]=await parseDocx(file);
-        else throw Error(file.name+'：旧版 DOC 无法在浏览器中直接解析，请转换为 DOCX 后导入');
-        imported[key].sourceFile=await uploadDocument(file);
+        entries.push({file,key});
       }
+      // 并行上传（4 路）；PDF 走方案A直接存源文件，不再在浏览器里解析/裁图，避免 canvas 与二次传图
+      let cursor=0;
+      const worker=async()=>{
+        while(cursor<entries.length){
+          const {file,key}=entries[cursor++];
+          let page;
+          if(/\.pdf$/i.test(file.name)){page=blank();page.name=key;}
+          else if(/\.docx?$/i.test(file.name)){page=await parseDocx(file);}
+          else{throw Error(file.name+'：旧版 DOC 无法在浏览器中直接解析，请转换为 DOCX 后导入');}
+          page.sourceFile=await uploadDocument(file);
+          imported[key]=page;
+        }
+      };
+      await Promise.all(Array.from({length:Math.min(4,entries.length)},worker));
       const count=Object.keys(imported).filter(code=>own(db(),code)).length;
       if(count&&!confirm(`有 ${count} 个同型号单页，是否替换？`))return;
       persist({...db(),...imported});render('已导入 '+Object.keys(imported).length+' 个产品单页。');

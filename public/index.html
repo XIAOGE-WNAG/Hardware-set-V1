@@ -778,14 +778,21 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   window.productPageDb=productPageDb;
   window.saveProductPageDb=saveProductPageDb;
   window.productPageBlank=blank;
+  function findLibraryPage(code){
+    if(productPageDb[code])return productPageDb[code];
+    for(const k of Object.keys(productPageDb)){const p=productPageDb[k];if(p&&String(p.skuCode||'').trim()===code)return p;}
+    return null;
+  }
   function syncProductPages(data){
     data.pages??={};
+    const missing=[];
     (data.products||[]).forEach(product=>{
       const code=String(product[0]||'');if(!code)return;
-      const stored=productPageDb[code];
+      const stored=findLibraryPage(code);
       if(stored&&!data.pages[code])data.pages[code]=structuredClone(stored);
-      if(!data.pages[code])data.pages[code]=makePage(product);
+      if(!data.pages[code]){data.pages[code]=makePage(product);missing.push(code);}
     });
+    data._missingPages=missing;
     return data;
   }
   function ensurePages(data){
@@ -847,7 +854,9 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
     ensurePages(caseData);
     const documentArea=document.getElementById('document');
     documentArea.className='document product-sheet';
-    documentArea.innerHTML=pageHtml(caseData.selectedPage,true);
+    const missing=(caseData._missingPages||[]);
+    const banner=missing.length?'<div style="margin:0 0 10px;padding:8px 12px;background:#fff3cd;border:1px solid #ffe08a;border-radius:4px;font:13px/1.5 sans-serif">⚠ 以下 '+missing.length+' 个 BOM 料号暂无产品单页，将输出占位页：'+esc(missing.join('、'))+'<br>请到「产品单页数据库」导入 PDF 并在编辑页填写对应「绑定 BOM 料号」。</div>':'';
+    documentArea.innerHTML=banner+pageHtml(caseData.selectedPage,true);
     const select=document.getElementById('page-select');
     if(select)select.onchange=event=>{caseData.selectedPage=event.target.value;try{projectStore.save(caseData)}catch(error){workbench.notice('产品页保存失败：'+error.message)}renderCurrent()};
     document.getElementById('edit-page-data')?.addEventListener('click',()=>document.getElementById('edit-data')?.click());

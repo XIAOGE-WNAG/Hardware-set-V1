@@ -128,19 +128,17 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
       if(savedVersion&&savedVersion!==dbSourceVersion){
         const embedded=Array.isArray(caseData.productDatabase)?caseData.productDatabase:[];
         const backupKey=dbKey+'-backup-'+savedVersion;
-        if(Array.isArray(globalDb)&&globalDb.length)localStorage.setItem(backupKey,JSON.stringify(globalDb));
+        // Legacy values are read for migration only; the server is the source of truth.
         if(embedded.length)globalDb=embedded;
       }
-      localStorage.setItem(dbVersionKey,dbSourceVersion);
     }catch(e){globalDb=null;}
     if(!Array.isArray(globalDb)){
       globalDb=Array.isArray(caseData.productDatabase)?caseData.productDatabase:[];
-      if(globalDb.length){try{localStorage.setItem(dbKey,JSON.stringify(globalDb));}catch(e){}}
     }
     // 存量数据一次性把英文单位翻译为中文并回存
     let unitChanged=false;
     globalDb.forEach(r=>{if(Array.isArray(r)&&r.length>=3){const z=window.zhDbUnit(r);if(z!==String(r[2]==null?'':r[2]).trim()){r[2]=z;unitChanged=true;}}});
-    if(unitChanged){try{localStorage.setItem(dbKey,JSON.stringify(globalDb));}catch(e){}}
+    void unitChanged;
     return globalDb;
   }
   const fail=m=>{throw new Error(m)};
@@ -160,7 +158,7 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
     return d;
   }
   const removeInstallationData=d=>{d.sets.forEach(s=>{delete s.diagram;delete s.diagramNote;delete s.doorType;delete s.installParts;delete s.originalDiagram});return d};
-  window.projectStore={validate,loadError:'',savedAt:'',save(data){removeInstallationData(data);data.productDatabase??=[];validate(data);const storeData=structuredClone(data);storeData.productDatabase=[];const payload={version:2,savedAt:new Date().toISOString(),data:storeData};try{localStorage.setItem(key,JSON.stringify(payload))}catch(e){throw new Error('未保存：浏览器存储不可用或空间不足，请导出备份保留修改。')}window.caseData=structuredClone(data);this.savedAt=payload.savedAt;return payload},backup(data=caseData){removeInstallationData(data);validate(data);return {version:2,savedAt:new Date().toISOString(),data}},read(text){const p=JSON.parse(text);if(p.version!==2)fail('不支持的备份版本。');return validate(removeInstallationData(p.data))}};
+  window.projectStore={validate,loadError:'',savedAt:'',save(data){removeInstallationData(data);data.productDatabase??=[];validate(data);const payload={version:2,savedAt:new Date().toISOString(),data:structuredClone(data)};payload.data.productDatabase=[];window.caseData=structuredClone(data);this.savedAt=payload.savedAt;return payload},backup(data=caseData){removeInstallationData(data);validate(data);return {version:2,savedAt:new Date().toISOString(),data}},read(text){const p=JSON.parse(text);if(p.version!==2)fail('不支持的备份版本。');return validate(removeInstallationData(p.data))}};
   try{const raw=localStorage.getItem(key)||localStorage.getItem('door-hardware-project-v6-full-case');if(raw){const p=JSON.parse(raw);if(p.version!==2)fail('备份版本不符');removeInstallationData(p.data);validate(p.data);window.caseData=p.data;projectStore.savedAt=p.savedAt}else removeInstallationData(caseData)}catch(e){projectStore.loadError='本地数据未能读取，当前展示初始案例。原存储未覆盖：'+e.message}
   // 项目备份加载完后，全局产品库始终以独立存储为准挂载（不被项目备份中的空库覆盖）
   caseData.productDatabase=loadGlobalDb();
@@ -548,7 +546,7 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   // 产品数据库为跨项目共享的全局物料库，独立存储，新建/切换项目均不清空
   const dbKey='door-hardware-product-database-v1';
   const loadDb=()=>{try{const d=JSON.parse(localStorage.getItem(dbKey)||'[]');return Array.isArray(d)?d:[]}catch(e){return[]}};
-  const saveDb=rows=>{localStorage.setItem(dbKey,JSON.stringify(Array.isArray(rows)?rows:[]))};
+  const saveDb=rows=>{caseData.productDatabase=Array.isArray(rows)?structuredClone(rows):[]};
   window.productDatabaseStore={load:loadDb,save:saveDb};
   const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const read=()=>{const rows=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(rows))throw Error('历史项目数据格式错误');return rows};
@@ -573,7 +571,7 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
     const vname=(versionName||defaultVersionName()||'未命名版本').trim();
     const item={id:uid(),projectId:d.project.id,projectName:d.project.name||'未命名项目',name:vname,savedAt:new Date().toISOString(),data:snapshot};
     rows.unshift(item);
-    localStorage.setItem(key,JSON.stringify(rows));caseData.project.id=d.project.id;window.hwBackendBridge?.syncVersion(item);return item;
+    caseData.project.id=d.project.id;window.hwBackendBridge?.syncVersion(item);return item;
   }
   function activate(data){const d=normalize(data);d.productDatabase=loadDb();const old=window.caseData;try{window.caseData=clone(d);projectStore.save(d)}catch(e){window.caseData=old;throw e}document.getElementById('search').value='';workbench.go(0)}
   function run(fn){try{fn()}catch(e){document.getElementById('project-error').textContent=e.message;workbench.notice(e.message)}}
@@ -598,7 +596,7 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
     bar.querySelector('[data-new-project]').onclick=()=>run(fresh);bar.querySelector('[data-save-history]').onclick=()=>run(save);bar.querySelector('[data-history]').onclick=()=>run(history);
     bar.querySelector('[data-database-shortcut]').onclick=()=>run(()=>{allowed();workbench.go(4)});
     bar.querySelector('[data-product-page-database]').onclick=()=>run(()=>{allowed();window.productPageLibrary.open()});
-    dialog.onclick=e=>run(()=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.remoteRestore){const item=window.remoteHistory?.versions?.find(v=>String(v.id)===b.dataset.remoteRestore);if(!item)throw Error('服务器历史版本不存在');if(caseData.doors.length||caseData.sets.length||caseData.products.length)archive(defaultVersionName());activate(item.snapshot);dialog.close();workbench.notice('服务器版本「'+item.name+'」已打开。');return;}if(b.dataset.remoteDelete){const item=window.remoteHistory?.versions?.find(v=>String(v.id)===b.dataset.remoteDelete),project=window.remoteHistory?.project;if(!item||!project)throw Error('服务器历史版本不存在');if(confirm('确定删除服务器历史版本「'+item.name+'」吗？'))window.hwApi.request('/api/projects/'+project.id+'/versions/'+item.id,{method:'DELETE'}).then(history);return;}if(b.hasAttribute('data-close-history'))dialog.close();if(b.dataset.restore){allowed();const item=read().find(r=>r.id===b.dataset.restore);if(!item)throw Error('历史版本不存在');if(caseData.doors.length||caseData.sets.length||caseData.products.length)archive(defaultVersionName());activate(item.data);dialog.close();workbench.notice('版本「'+item.name+'」已打开。')}if(b.dataset.delete){const id=b.dataset.delete;show('<h2>删除此版本</h2><p>仅删除该保存版本，不影响同一项目的其他版本；删除后只能通过之前导出的备份恢复。</p><button id="confirm-project-delete">确认删除</button>');dialog.querySelector('#confirm-project-delete').onclick=()=>run(()=>{allowed();localStorage.setItem(key,JSON.stringify(read().filter(r=>r.id!==id)));history()})}});
+    dialog.onclick=e=>run(()=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.remoteRestore){const item=window.remoteHistory?.versions?.find(v=>String(v.id)===b.dataset.remoteRestore);if(!item)throw Error('服务器历史版本不存在');if(caseData.doors.length||caseData.sets.length)archive(defaultVersionName());activate(item.snapshot);dialog.close();workbench.notice('服务器版本「'+item.name+'」已打开。');return;}if(b.dataset.remoteDelete){const item=window.remoteHistory?.versions?.find(v=>String(v.id)===b.dataset.remoteDelete),project=window.remoteHistory?.project;if(!item||!project)throw Error('服务器历史版本不存在');if(confirm('确定删除服务器历史版本「'+item.name+'」吗？'))window.hwApi.request('/api/projects/'+project.id+'/versions/'+item.id,{method:'DELETE'}).then(history);return;}if(b.hasAttribute('data-close-history'))dialog.close();if(b.dataset.restore){allowed();const item=read().find(r=>r.id===b.dataset.restore);if(!item)throw Error('历史版本不存在');if(caseData.doors.length||caseData.sets.length)archive(defaultVersionName());activate(item.data);dialog.close();workbench.notice('版本「'+item.name+'」已打开。')}if(b.dataset.delete){show('<h2>历史版本已迁移到服务器</h2><p>请选择服务器历史记录后删除。本地旧缓存不再写回浏览器。</p><button data-close-history>关闭</button>')}});
     window.projectManager={saveHistory:()=>run(save),newProject:()=>run(fresh),openHistory:()=>run(history)};
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -775,7 +773,7 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   const makePage=product=>({brand:product?.[11]||'GMT',brandImage:null,name:product?.[1]||'',variants:[[product?.[2]||'',(product?.[3]||[]).join('\n'),product?.[4]||'',product?.[5]||'']],features:[...(product?.[3]||[])],footer:'',footerImage:null,footerBlocks:footerDefaults(),qrImage:null,photo:product?.[10]||null,drawing:null,imageLayout:{}});
   const productPageDbKey='door-hardware-product-page-database-v1';
   const loadProductPageDb=()=>{try{const db=JSON.parse(localStorage.getItem(productPageDbKey)||'{}');return db&&typeof db==='object'&&!Array.isArray(db)?db:{}}catch(e){return {}}};
-  const saveProductPageDb=db=>localStorage.setItem(productPageDbKey,JSON.stringify(db));
+  const saveProductPageDb=db=>{window.productPageDb=db};
   const productPageDb=loadProductPageDb();
   window.productPageDb=productPageDb;
   window.saveProductPageDb=saveProductPageDb;

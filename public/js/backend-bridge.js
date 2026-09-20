@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const token = () => localStorage.getItem('hw_token');
-  let timer = 0, wrapped = false;
+  let timer = 0, wrapped = false, pendingData = null;
   const businessKey = key => /^(door-hardware-project-|door-hardware-product-database|door-hardware-product-page-database|door-hardware-auth-session|door-hardware-project-history)/.test(key);
   const hasLegacyData = () => { for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&businessKey(key))return true;} return false; };
   function clearLegacyData(){const remove=[];for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&businessKey(key))remove.push(key);}remove.forEach(key=>localStorage.removeItem(key));}
@@ -72,13 +72,19 @@
     if(!token()||!window.hwApi||!item?.data)return;
     try{const projects=(await window.hwApi.request('/api/projects')).data||[],project=projects.find(p=>p.name===item.projectName);if(project)await window.hwApi.request('/api/projects/'+project.id+'/versions',{method:'POST',body:JSON.stringify({name:item.name,snapshot:item.data})});}catch(error){console.warn('[version-sync]',error.message);}
   }
-  function schedule() {
-    clearTimeout(timer); timer=setTimeout(async () => { const legacy=hasLegacyData(); if(legacy){const dataOk=await sync(window.caseData),pagesOk=await syncPages();if(dataOk&&pagesOk)clearLegacyData();} await hydratePages(); await hydrateState(); await hydrateProductDatabase(); },500);
+  function schedule(data=null) {
+    if(data)pendingData=data;
+    clearTimeout(timer); timer=setTimeout(async () => {
+      const snapshot=pendingData; pendingData=null;
+      const legacy=hasLegacyData(),dataOk=snapshot?await sync(snapshot):(legacy?await sync(window.caseData):true),pagesOk=(snapshot||legacy)?await syncPages():true;
+      if(dataOk&&pagesOk)clearLegacyData();
+      await hydratePages(); await hydrateState(); await hydrateProductDatabase();
+    },500);
   }
   function attach() {
     if (!window.projectStore || wrapped) return;
     const original=window.projectStore.save.bind(window.projectStore);
-    window.projectStore.save=function(data){const result=original(data);schedule();return result;};
+    window.projectStore.save=function(data){const result=original(data);schedule(data);return result;};
     wrapped=true; schedule();
   }
   window.addEventListener('hw-auth-login',schedule);

@@ -1,4 +1,6 @@
 *.bak
+*.backup-*
+*.restore-*
 backup-*/
 node_modules/
 .env

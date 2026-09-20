@@ -28,7 +28,7 @@
     if (!token() || !window.hwApi || !window.productPageDb || Object.keys(window.productPageDb).length) return;
     try {
       const result=await window.hwApi.request('/api/product-pages');
-      const pages=Object.fromEntries((result.data||[]).map(row=>[row.sku_code,row.page]));
+      const pages=Object.fromEntries((result.data||[]).map(row=>[row.sku_code,{...row.page,sourceFile:row.sourceFile||row.page?.sourceFile||null}]));
       if(Object.keys(pages).length){Object.assign(window.productPageDb,pages);window.saveProductPageDb(window.productPageDb);window.dispatchEvent(new Event('product-pages-hydrated'));}
     } catch (error) { console.warn('[page-hydrate]',error.message); }
   }

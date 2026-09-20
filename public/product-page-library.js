@@ -105,7 +105,7 @@
     if(!root){root=document.createElement('section');root.id='product-page-library';root.setAttribute('aria-label','产品单页数据库工作区');document.getElementById('workflow').before(root);}
     state.hidden=[];state.scroll=window.scrollY;
     // Like the material database, replace the workspace; keep the top-level navigation.
-    for(const el of [document.getElementById('workflow'),document.getElementById('viewport').closest('main')]){
+    for(const el of [document.getElementById('viewport').closest('main')]){
       state.hidden.push([el,el.hidden]);el.hidden=true;
     }
     state.active=true;root.hidden=false;document.body.classList.add('page-library-active');

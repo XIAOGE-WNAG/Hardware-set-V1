@@ -17,6 +17,9 @@ async function main(){
   assert.equal((await request('/api/projects',{headers:{Authorization:'Bearer invalid'}})).status,401);
   assert.equal((await request('/api/auth/me',{headers:auth})).status,200);
   const project=await request('/api/projects',{method:'POST',headers:auth,body:JSON.stringify({name:'验证项目',planCode:'V'})});assert.equal(project.status,201);const projectId=project.body.data.id;
+  const bundle={project:{name:'迁移验证项目',planCode:'M'},productDatabase:[['MIG-1','迁移产品','只','GMT']],doors:[],sets:[],products:[]};
+  assert.equal((await request('/api/migrate/local',{method:'POST',headers:auth,body:JSON.stringify({data:bundle})})).status,200);
+  assert.equal((await request('/api/migrate/local',{method:'POST',headers:auth,body:JSON.stringify({data:bundle})})).status,200);
   const product=await request('/api/products',{method:'POST',headers:auth,body:JSON.stringify({skuCode:'VERIFY-1',name:'验证产品',model:'VERIFY-1',unit:'只',price:12})});assert.equal(product.status,201);const productId=product.body.data.id;
   const set=await request('/api/sets',{method:'POST',headers:auth,body:JSON.stringify({setCode:'VERIFY-SET',name:'验证组'})});assert.equal(set.status,201);const setId=set.body.data.id;
   assert.equal((await request(`/api/sets/${setId}/items`,{method:'POST',headers:auth,body:JSON.stringify({productId,quantityPerDoor:2})})).status,201);

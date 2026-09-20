@@ -10,6 +10,14 @@
       if(Object.keys(pages).length){Object.assign(window.productPageDb,pages);window.saveProductPageDb(window.productPageDb);window.dispatchEvent(new Event('product-pages-hydrated'));}
     } catch (error) { console.warn('[page-hydrate]',error.message); }
   }
+  async function hydrateProductDatabase() {
+    if (!token() || !window.hwApi || !window.caseData || (window.caseData.productDatabase||[]).length) return;
+    try {
+      const result=await window.hwApi.request('/api/products');
+      const rows=(result.data||[]).map(p=>[p.sku_code,p.specs?.description||p.name||'',p.unit||'',p.brand||'']);
+      if(rows.length){window.caseData.productDatabase=rows;window.dispatchEvent(new Event('backend-product-database-hydrated'));window.workbench?.render?.();}
+    } catch (error) { console.warn('[product-db-hydrate]',error.message); }
+  }
   async function sync(data) {
     if (!token() || !window.hwApi || !data) return;
     try { await window.hwApi.request('/api/migrate/local',{method:'POST',body:JSON.stringify({data})}); }
@@ -21,7 +29,7 @@
     catch (error) { console.warn('[page-sync]',error.message); }
   }
   function schedule() {
-    clearTimeout(timer); timer=setTimeout(() => { hydratePages().finally(() => { sync(window.caseData); syncPages(); }); },500);
+    clearTimeout(timer); timer=setTimeout(() => { hydratePages().finally(() => hydrateProductDatabase()).finally(() => { sync(window.caseData); syncPages(); }); },500);
   }
   function attach() {
     if (!window.projectStore || wrapped) return;

@@ -11,7 +11,9 @@ function migrateLocal(data={}) {
   if(projectId) db.prepare('UPDATE projects SET name=?,plan_code=?,settings=?,updated_at=? WHERE id=?').run(project.name||'迁移项目',project.planCode||'',json(project),t,projectId);
   else projectId=Number(db.prepare('INSERT INTO projects(name,plan_code,settings,created_at,updated_at) VALUES(?,?,?,?,?)').run(project.name||'迁移项目',project.planCode||'',json(project),t,t).lastInsertRowid);
   const products=new Map(), sets=new Map();
-  for(const p of data.products||[]){
+  const productRows=[...(data.products||[])];
+  for(const row of data.productDatabase||[]) if(Array.isArray(row)) productRows.push({skuCode:row[0],name:row[1]||row[0],model:row[0],specs:{description:row[1]||''},unit:row[2]||'',brand:row[3]||''});
+  for(const p of productRows){
     const row=Array.isArray(p)?{skuCode:p[0],name:p[1],model:p[2],specs:p[3],finish:p[4],unit:p[5]}:p;
     const sku=String(row.skuCode||row.sku||row.model||'').trim(); if(!sku) continue;
     const old=one('SELECT id FROM products WHERE sku_code=?',[sku]);

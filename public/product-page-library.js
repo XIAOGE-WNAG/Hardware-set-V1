@@ -86,10 +86,12 @@
   }
   function exportPdf(){
     const page=normalize(db()[state.selected]);
-    const printWindow=window.open('','_blank','noopener,noreferrer');
-    if(!printWindow){message('浏览器阻止了新窗口，请允许弹出窗口后再导出 PDF。');return;}
-    printWindow.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(pageTitle(page))+'</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,"Microsoft YaHei",sans-serif}.sheet{width:680px;margin:auto}.sheet table{border-collapse:collapse;width:100%}.sheet td,.sheet th{border:1px solid #222;padding:6px}.sheet .bar{background:#86add8;padding:7px}.sheet img{max-width:100%;max-height:360px;object-fit:contain}</style></head><body><div class="sheet">'+window.productPageHtml(state.selected,false,page)+'</div><script>window.onload=function(){setTimeout(function(){window.print()},150)}<\/script></body></html>');
-    printWindow.document.close();
+    const html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(pageTitle(page))+'</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,"Microsoft YaHei",sans-serif}.sheet{width:680px;margin:auto}.sheet table{border-collapse:collapse;width:100%}.sheet td,.sheet th{border:1px solid #222;padding:6px}.sheet .bar{background:#86add8;padding:7px}.sheet img{max-width:100%;max-height:360px;object-fit:contain}</style></head><body><div class="sheet">'+window.productPageHtml(state.selected,false,page)+'</div></body></html>';
+    let frame=document.getElementById('__pdf_print_frame');
+    if(!frame){frame=document.createElement('iframe');frame.id='__pdf_print_frame';frame.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';document.body.appendChild(frame);}
+    const doc=frame.contentWindow.document;
+    doc.open();doc.write(html);doc.close();
+    frame.onload=()=>{setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print();}catch(e){message('打印失败：'+e.message);}},200);};
   }
   function leave() {
     if(state.pending){message('图片正在读取，请稍候。');return false;}
@@ -151,8 +153,9 @@
       <p class="source-note">全局产品单页库 · ${codes.length} 个单页 · 新增和修改保存在数据库中</p>
       <div class="library-actions"><button data-action="add">新增产品单页</button><button data-action="edit" ${codes.length?'':'disabled'}>编辑当前单页</button><button data-action="delete" ${codes.length?'':'disabled'}>删除选中单页</button><button data-action="export-word" ${codes.length?'':'disabled'}>导出当前单页 Word</button><button data-action="export-pdf" ${codes.length?'':'disabled'}>导出当前单页 PDF</button><label class="library-import">导入产品单页 <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple data-library-import></label></div>
       <p data-library-status role="status">${esc(status)}</p>
+      ${codes.length?`<div class="page-switcher"><label>选择产品单页 <select data-library-select multiple size="1" aria-label="选择产品单页（可多选删除）">${codes.map(code=>`<option value="${esc(code)}" ${state.selectedMany.includes(code)?'selected':''}>${esc(displayLabel(code))}</option>`).join('')}</select></label><button data-action="edit">编辑当前单页</button></div>`:''}
       <div class="library-viewport" tabindex="0"><article class="document product-sheet">
-      ${codes.length?`<div class="page-switcher"><label>选择产品单页 <select data-library-select multiple size="1" aria-label="选择产品单页（可多选删除）">${codes.map(code=>`<option value="${esc(code)}" ${state.selectedMany.includes(code)?'selected':''}>${esc(displayLabel(code))}</option>`).join('')}</select></label><button data-action="edit">编辑当前单页</button></div><div class="library-page-preview">${db()[state.selected].sourceFile?sourceHtml(db()[state.selected]):window.productPageHtml(state.selected,false,normalize(db()[state.selected]))}</div>`:'<div class="empty"><h2>暂无产品单页</h2><p>可批量导入 PDF、DOC 或 DOCX 产品单页，或手工新增。</p></div>'}
+      ${codes.length?`<div class="library-page-preview">${db()[state.selected].sourceFile?sourceHtml(db()[state.selected]):window.productPageHtml(state.selected,false,normalize(db()[state.selected]))}</div>`:'<div class="empty"><h2>暂无产品单页</h2><p>可批量导入 PDF、DOC 或 DOCX 产品单页，或手工新增。</p></div>'}
       </article></div>`;
     root.querySelector('[data-library-select]')?.addEventListener('change',e=>{
       state.selectedMany=[...e.target.selectedOptions].map(option=>option.value);

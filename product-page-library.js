@@ -60,7 +60,8 @@
   }
   async function parseDocx(file){
     await loadScript('vendor/mammoth.browser.min.js',()=>window.mammoth);
-    const result=await window.mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()}),page=structuredPage(file.name,result.value,[]);return page;
+    const arrayBuffer=await file.arrayBuffer(),result=await window.mammoth.extractRawText({arrayBuffer}),html=await window.mammoth.convertToHtml({arrayBuffer}),images=[...html.value.matchAll(/<img[^>]+src=["'](data:image\/[^"']+)["']/gi)].map(match=>match[1]);
+    const page=structuredPage(file.name,result.value,images.length?[{photo:images[0]||null,drawing:images[1]||null}]:[]);return page;
   }
   function sourceHtml(page){
     if(!page?.sourceFile)return '';

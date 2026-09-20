@@ -128,7 +128,12 @@
     for(const key of Object.keys(target)){
       const p=target[key]||{};
       const hasName=String(p.name||'').trim();
-      if(!hasName && !p.sourceFile && !p.photo && !p.drawing && !(p.variants||[]).length && !(p.features||[]).length) delete target[key];
+      const isRowIndex=/^\d+$/.test(String(key).trim());
+      // 1) 完全空壳：既无名称又无任何内容/源文件
+      const empty=!hasName && !p.sourceFile && !p.photo && !p.drawing && !(p.variants||[]).length && !(p.features||[]).length;
+      // 2) 历史行号残留：key 为纯数字、无名称、无源文件（真实 SKU 均含字母/横杠，不会纯数字）
+      const rowJunk=isRowIndex && !hasName && !p.sourceFile;
+      if(empty||rowJunk) delete target[key];
     }
   }
   function render(status='') {

@@ -18,6 +18,24 @@
       if(rows.length){window.caseData.productDatabase=rows;window.dispatchEvent(new Event('backend-product-database-hydrated'));window.workbench?.render?.();}
     } catch (error) { console.warn('[product-db-hydrate]',error.message); }
   }
+  function stateToCase(state) {
+    const source=state.project||{}, settings=source.settings||{}, products=state.products||[], productById=new Map(products.map(p=>[p.id,p]));
+    const sets=(state.sets||[]).map(s=>({code:s.set_code,location:s.name||'',types:s.door_type||'',door:s.material||'',qty:0,items:(s.items||[]).map(i=>{const p=productById.get(i.product_id)||i;return [p.sku_code||'',p.name||'',p.finish||'',p.unit||'',Number(i.quantity_per_door)||1,i.brand||''];})}));
+    const setById=new Map((state.sets||[]).map((s,i)=>[s.id,sets[i].code]));
+    const doors=(state.doors||[]).map((d,i)=>[Number(d.seq)||i+1,d.floor||'',d.door_number||'',d.door_model||'',d.room_function||'',d.width??'/',d.height??'/',d.thickness??'/',Number(d.qty)||1,d.material||'',d.door_type||'',setById.get(d.set_id)||'',d.section||'',d.remark||'']);
+    const productRows=products.map(p=>[p.sku_code,p.name,p.model||'',Array.isArray(p.specs?.features)?p.specs.features:(p.specs?.description?[p.specs.description]:[]),p.finish||'',p.unit||'',0,null,p.price||'', '',/^data:image\//.test(p.main_image_url||'')?p.main_image_url:null,p.brand||'']);
+    const page=settings.page||window.caseData?.page||{brand:'',name:'',variants:[],features:[],footer:'',photo:null,drawing:null};
+    return {doors,sets,products:productRows,project:{...settings,name:source.name||settings.name||'未命名项目',id:source.id},page,productDatabase:productRows.map(p=>[p[0],p[3].join('\n'),p[5],p[11]])};
+  }
+  async function hydrateState() {
+    if(!token()||!window.hwApi||!window.caseData)return;
+    try{
+      const projects=(await window.hwApi.request('/api/projects')).data||[], localName=window.caseData.project?.name||'';
+      const project=projects.find(p=>p.name===localName)||projects[0]; if(!project)return;
+      const state=(await window.hwApi.request('/api/state?projectId='+encodeURIComponent(project.id))).data;
+      if(state?.project){window.caseData=stateToCase(state);window.dispatchEvent(new Event('backend-state-hydrated'));window.workbench?.render?.();}
+    }catch(error){console.warn('[state-hydrate]',error.message);}
+  }
   async function sync(data) {
     if (!token() || !window.hwApi || !data) return;
     try { await window.hwApi.request('/api/migrate/local',{method:'POST',body:JSON.stringify({data})}); }
@@ -29,7 +47,7 @@
     catch (error) { console.warn('[page-sync]',error.message); }
   }
   function schedule() {
-    clearTimeout(timer); timer=setTimeout(() => { hydratePages().finally(() => hydrateProductDatabase()).finally(() => { sync(window.caseData); syncPages(); }); },500);
+    clearTimeout(timer); timer=setTimeout(async () => { await sync(window.caseData); await syncPages(); await hydratePages(); await hydrateState(); await hydrateProductDatabase(); },500);
   }
   function attach() {
     if (!window.projectStore || wrapped) return;

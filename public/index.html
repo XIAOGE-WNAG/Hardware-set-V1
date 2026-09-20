@@ -170,7 +170,26 @@ dialog[open]{left:10px;right:10px;top:10px;bottom:10px}
 /* 居中基准对齐：滚动条占位常驻，白页与顶部工具条共用同一中心 */
 .viewport{scrollbar-gutter:stable;overflow-y:auto}
 </style>
-</head><body>
+<style id="border-final">
+/* === 产品单页统一边框模型 v1 === */
+.product-sheet-content{border:0!important;outline:0!important;box-shadow:none!important}
+.product-frame{border:1px solid #111!important;box-sizing:border-box!important;overflow:hidden!important;border-radius:0!important;box-shadow:none!important;outline:0!important}
+.product-frame .caption{border:0!important;border-top:0!important;border-bottom:0!important}
+.product-frame .blue-band{border-top:1px solid #111!important;border-bottom:0!important;box-shadow:none!important}
+.product-frame .product-visuals{border:0!important;border-top:0!important;border-bottom:0!important}
+.product-frame .product-visuals>div{border:0!important}
+.product-frame .product-visuals>div+div{border-left:1px solid #111!important}
+.product-frame .order-table{border-collapse:collapse!important;border-spacing:0!important;border:0!important;width:100%!important;table-layout:fixed!important;box-shadow:none!important}
+.product-frame .order-table th,.product-frame .order-table td{border:1px solid #111!important;border-width:1px!important;box-sizing:border-box!important}
+.product-frame .features{border:0!important;border-top:0!important;border-bottom:0!important;box-shadow:none!important}
+.product-frame .order-table + .blue-band{border-top:1px solid #111!important}
+@media print{
+.product-frame{border:1px solid #111!important;box-shadow:none!important;outline:none!important}
+.product-frame .order-table{border-collapse:collapse!important;border-spacing:0!important}
+.product-frame .order-table th,.product-frame .order-table td{border:1px solid #111!important}
+.product-frame .product-visuals>div+div{border-left:1px solid #111!important}
+}
+</style></head><body>
 <header class="app-header"><strong>门五金配置</strong><span>钱江世纪城总部大楼 · 2标段</span><button id="print">打印 / 另存 PDF</button></header><nav id="workflow" aria-label="4个功能模块"></nav><main><div class="tools"><h1 id="module-title"></h1><div class="controls"><label id="search-label">查找 <input id="search" type="search" placeholder="门号、位置、产品代码"></label><label id="set-label" hidden>配置组 <select id="set-select"><option>SET-01</option><option>SET-02</option><option>SET-02D</option></select></label><button id="export">导出排版表格</button></div></div><p class="source-note" id="source-note"></p><div id="viewport" class="viewport" tabindex="0" aria-label="表格区域，可横向滚动"><article id="document" class="document"></article></div><footer class="pager"><button id="previous">上一步</button><span id="step-description"></span><button id="next">下一步</button></footer></main><div id="notice" role="status" aria-live="polite"></div><script>
 /* ===== data.js ===== */
 // 截图转录节选。各表均保留原始数量，不以截图节选冒充完整项目。

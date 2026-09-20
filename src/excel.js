@@ -1,0 +1,16 @@
+const XLSX=require('xlsx');
+const {migrateLocal}=require('./migration');
+const rows=sheet=>XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',raw:false});
+const find=(data,keys)=>data.findIndex(row=>keys.every(k=>row.some(v=>String(v).replace(/\s/g,'').includes(k))));
+const value=(row,map,key)=>map[key]===undefined?'':row[map[key]];
+function mapHeader(header){const m={};header.forEach((v,i)=>{const s=String(v).replace(/\s|\n/g,'');if(/序号|No/i.test(s))m.seq=i;else if(/楼层|Floor/i.test(s))m.floor=i;else if(/门号|DoorNo/i.test(s))m.doorNumber=i;else if(/门型|门型号|DoorType/i.test(s))m.doorModel=i;else if(/房间|Room/i.test(s))m.roomFunction=i;else if(/宽度|DW/i.test(s))m.width=i;else if(/高度|DH/i.test(s))m.height=i;else if(/厚度|DT/i.test(s))m.thickness=i;else if(/樘数|数量|Qty/i.test(s))m.qty=i;else if(/门材质|材质|DM/i.test(s))m.material=i;else if(/开启|DoorOpening/i.test(s))m.doorType=i;else if(/五金组|HWSet|配置组/i.test(s))m.setCode=i;else if(/所属标段|区域|Area/i.test(s))m.section=i;else if(/备注|Notes/i.test(s))m.remark=i;else if(/产品型号|SKU|型号/.test(s))m.sku=i;else if(/产品名称|名称/.test(s))m.name=i;else if(/描述|说明/.test(s))m.description=i;else if(/表面处理|颜色|Finish/.test(s))m.finish=i;else if(/单位|Unit/.test(s))m.unit=i;else if(/价格|单价|Price/.test(s))m.price=i;else if(/组号|五金组|配置组/.test(s))m.code=i;else if(/组名|组名称/.test(s))m.setName=i;else if(/单樘用量|用量|数量/.test(s))m.qty=i;});return m;}
+function importWorkbook(workbook,projectId){
+  const names=workbook.SheetNames, sheets=names.map(n=>rows(workbook.Sheets[n])), doors=[],products=[],sets=[];
+  const di=sheets.findIndex(s=>find(s,['门号'])>=0), pi=sheets.findIndex(s=>find(s,['产品型号'])>=0), si=sheets.findIndex(s=>find(s,['组号'])>=0||find(s,['五金组'])>=0);
+  if(di>=0){const s=sheets[di],h=find(s,['门号']),m=mapHeader(s[h]);for(const row of s.slice(h+1)){const text=row.join('');if(!text||/项目总樘数|当前门表|合计|小计/.test(text))continue;const d={seq:value(row,m,'seq'),floor:value(row,m,'floor'),doorNumber:value(row,m,'doorNumber'),doorModel:value(row,m,'doorModel'),roomFunction:value(row,m,'roomFunction'),width:value(row,m,'width'),height:value(row,m,'height'),thickness:value(row,m,'thickness'),qty:value(row,m,'qty')||1,material:value(row,m,'material'),doorType:value(row,m,'doorType'),setCode:value(row,m,'setCode'),section:value(row,m,'section'),remark:value(row,m,'remark')};if(d.doorNumber||d.doorModel)doors.push(d);}}
+  if(pi>=0){const s=sheets[pi],h=find(s,['产品型号']),m=mapHeader(s[h]);for(const row of s.slice(h+1)){const sku=value(row,m,'sku');if(sku)products.push({skuCode:sku,name:value(row,m,'name')||sku,model:sku,finish:value(row,m,'finish'),unit:value(row,m,'unit'),price:Number(value(row,m,'price'))||0,specs:{description:value(row,m,'description')}});}}
+  if(si>=0){const s=sheets[si],h=find(s,['组号'])>=0?find(s,['组号']):find(s,['五金组']),m=mapHeader(s[h]);for(const row of s.slice(h+1)){const code=value(row,m,'code');if(code)sets.push({code,name:value(row,m,'setName')||code,items:value(row,m,'sku')?[{skuCode:value(row,m,'sku'),quantityPerDoor:Number(value(row,m,'qty'))||1}]:[]});}}
+  const id=migrateLocal({project:{id:projectId,name:'Excel 导入项目'},doors,products,sets});
+  return {projectId:id,sheetNames:names,doorRows:doors.length,setRows:sets.length,productRows:products.length};
+}
+module.exports={importWorkbook};

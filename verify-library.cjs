@@ -1,24 +1,30 @@
-const fs=require('node:fs');
 const assert=require('node:assert/strict');
-const vm=require('node:vm');
-const http=require('node:http');
-const current=fs.readFileSync('index.html','utf8');
-const before=fs.readFileSync('index.html.before-independent-module.bak','utf8');
-let count=0;
-for(const match of current.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)){
-  if(match[1].trim()){new vm.Script(match[1]);count++;}
+const fs=require('node:fs');
+const path=require('node:path');
+const {spawn}=require('node:child_process');
+const port=Number(process.env.VERIFY_PORT||3123), dataDir=path.join(__dirname,'.verify-data-'+process.pid);
+try{fs.rmSync(dataDir,{recursive:true,force:true})}catch{}
+const child=spawn(process.execPath,['src/server.js'],{cwd:__dirname,env:{...process.env,PORT:String(port),HW_DATA_DIR:dataDir},stdio:['ignore','pipe','pipe']});
+const base=`http://127.0.0.1:${port}`;
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function request(url,options={}){const response=await fetch(base+url,options),body=await response.json();return {status:response.status,body};}
+async function main(){
+  for(let i=0;i<30;i++){try{if((await fetch(base+'/api/health')).ok)break}catch{}await sleep(100);}
+  const health=await request('/api/health');assert.equal(health.status,200);assert.equal(health.body.ok,true);
+  assert.equal((await request('/api/projects')).status,401);
+  const login=await request('/api/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:'admin',password:'Hardware@2026'})});
+  assert.equal(login.status,200);assert.equal(login.body.data.user.mustChangePassword,true);const token=login.body.data.token;const auth={Authorization:`Bearer ${token}`,'content-type':'application/json'};
+  assert.equal((await request('/api/projects',{headers:{Authorization:'Bearer invalid'}})).status,401);
+  assert.equal((await request('/api/auth/me',{headers:auth})).status,200);
+  const project=await request('/api/projects',{method:'POST',headers:auth,body:JSON.stringify({name:'验证项目',planCode:'V'})});assert.equal(project.status,201);const projectId=project.body.data.id;
+  const product=await request('/api/products',{method:'POST',headers:auth,body:JSON.stringify({skuCode:'VERIFY-1',name:'验证产品',model:'VERIFY-1',unit:'只',price:12})});assert.equal(product.status,201);const productId=product.body.data.id;
+  const set=await request('/api/sets',{method:'POST',headers:auth,body:JSON.stringify({setCode:'VERIFY-SET',name:'验证组'})});assert.equal(set.status,201);const setId=set.body.data.id;
+  assert.equal((await request(`/api/sets/${setId}/items`,{method:'POST',headers:auth,body:JSON.stringify({productId,quantityPerDoor:2})})).status,201);
+  assert.equal((await request('/api/doors',{method:'POST',headers:auth,body:JSON.stringify({projectId,doors:[{seq:1,doorNumber:'V-1',setId,qty:3}]})})).status,201);
+  const bom=await request(`/api/bom?projectId=${projectId}`,{headers:auth});assert.equal(bom.status,200);assert.equal(bom.body.data[0].total_quantity,6);assert.equal(bom.body.data[0].total_price,72);
+  assert.equal((await request('/api/product-pages',{method:'POST',headers:auth,body:JSON.stringify({skuCode:'VERIFY-1',page:{name:'验证单页',variants:[['VERIFY-1','','','']]}})})).status,201);
+  assert.equal((await request('/api/product-pages/VERIFY-1',{headers:auth})).body.data.page.name,'验证单页');
+  const xlsx=await fetch(base+`/api/export/xlsx?projectId=${projectId}`,{headers:auth});assert.equal(xlsx.status,200);assert.equal(xlsx.headers.get('content-type'),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  console.log('PASS health/auth/CRUD/BOM/xlsx');
 }
-new vm.Script(fs.readFileSync('product-page-library.js','utf8'));
-console.log('Syntax checked:',count,'inline script(s) plus library');
-// The existing material database and workbench implementation must stay byte-identical.
-const prefix=s=>s.slice(0,s.indexOf('/* ===== editor.js ===== */')).replace(/<link rel="stylesheet" href="product-page-library.css\?v=2">\r?\n/,'').replace(/<script defer src="product-page-library.js\?v=2"><\/script>\r?\n/,'').replace(/\r\n/g,'\n');
-assert.equal(prefix(current),prefix(before));
-const shortcut=s=>s.split(/\r?\n/).find(l=>l.includes("[data-database-shortcut]').onclick"));
-assert.equal(shortcut(current),shortcut(before));
-console.log('PASS: existing material database + workbench code and shortcut unchanged');
-const library=fs.readFileSync('product-page-library.js','utf8');
-assert(!/\b(caseData|projectStore)\s*[.\[]/.test(library.replace(/\/\*[\s\S]*?\*\//g,'')));
-assert(!/showModal\(|workbench\.go\(/.test(library));
-assert(!current.includes('const openDbPage=code=>'));
-console.log('PASS: library has no project writes, workflow redirects or modal implementation');
-http.get('http://127.0.0.1:8000/',res=>{let body='';res.setEncoding('utf8');res.on('data',chunk=>body+=chunk);res.on('end',()=>{assert.equal(res.statusCode,200);assert.equal(body,current);console.log('PASS: port 8000 serves edited workspace index.html');});}).on('error',error=>{throw error;});
+main().catch(error=>{console.error('FAIL',error);process.exitCode=1}).finally(()=>{child.kill();});

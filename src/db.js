@@ -3,7 +3,7 @@ const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
 
 const root = path.resolve(__dirname, '..');
-const dataDir = path.join(root, 'data');
+const dataDir = path.resolve(process.env.HW_DATA_DIR || path.join(root, 'data'));
 fs.mkdirSync(dataDir, { recursive: true });
 const db = new DatabaseSync(path.join(dataDir, 'app.db'));
 
@@ -20,6 +20,19 @@ function initDb() {
     CREATE TABLE IF NOT EXISTS door_schedules (id INTEGER PRIMARY KEY, project_id INTEGER NOT NULL, seq INTEGER, floor TEXT DEFAULT '', door_number TEXT DEFAULT '', door_model TEXT DEFAULT '', room_function TEXT DEFAULT '', width REAL, height REAL, thickness REAL, qty INTEGER NOT NULL DEFAULT 1, material TEXT DEFAULT '', fire_rating TEXT DEFAULT '', door_type TEXT DEFAULT '', set_id INTEGER, section TEXT DEFAULT '', remark TEXT DEFAULT '');
     CREATE TABLE IF NOT EXISTS product_pages (id INTEGER PRIMARY KEY, product_id INTEGER, sku_code TEXT UNIQUE NOT NULL, page_json TEXT NOT NULL, source_file_json TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
   `);
+  if (!db.prepare('SELECT 1 FROM categories LIMIT 1').get()) {
+    db.prepare('INSERT INTO categories(name,template_schema,sort) VALUES(?,?,?)').run('示例五金','{}',1);
+  }
+  if (!db.prepare('SELECT 1 FROM products LIMIT 1').get()) {
+    const category = db.prepare('SELECT id FROM categories ORDER BY id LIMIT 1').get();
+    const add = db.prepare('INSERT INTO products(sku_code,name,category_id,brand,model,finish,unit,specs,sort) VALUES(?,?,?,?,?,?,?,?,?)');
+    add.run('DEMO-001','示例闭门器',category.id,'GMT','DEMO-001','银色','只','{"description":"云端演示产品"}',1);
+    add.run('DEMO-002','示例合页',category.id,'GMT','DEMO-002','拉丝不锈钢','片','{"description":"云端演示产品"}',2);
+  }
+  if (!db.prepare('SELECT 1 FROM projects LIMIT 1').get()) {
+    const t = new Date().toISOString();
+    db.prepare('INSERT INTO projects(name,plan_code,settings,created_at,updated_at) VALUES(?,?,?,?,?)').run('云端演示项目','DEMO','{"source":"seed"}',t,t);
+  }
 }
 
 module.exports = { db, initDb, root, dataDir };

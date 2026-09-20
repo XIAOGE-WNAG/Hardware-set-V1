@@ -70,6 +70,7 @@ body[data-step="4"] .document{padding:0}
 </style>
 <link rel="stylesheet" href="product-page-library.css?v=2">
 <script defer src="product-page-library.js?v=2"></script>
+<script src="/public/js/api.js"></script><script src="/public/js/backend-bridge.js"></script>
 </head><body>
 <header class="app-header"><strong>门五金配置</strong><span>钱江世纪城总部大楼 · 2标段</span><button id="print">打印 / 另存 PDF</button></header><nav id="workflow" aria-label="4个功能模块"></nav><main><div class="tools"><h1 id="module-title"></h1><div class="controls"><label id="search-label">查找 <input id="search" type="search" placeholder="门号、位置、产品代码"></label><label id="set-label" hidden>配置组 <select id="set-select"><option>SET-01</option><option>SET-02</option><option>SET-02D</option></select></label><button id="export">导出排版表格</button></div></div><p class="source-note" id="source-note"></p><div id="viewport" class="viewport" tabindex="0" aria-label="表格区域，可横向滚动"><article id="document" class="document"></article></div><footer class="pager"><button id="previous">上一步</button><span id="step-description"></span><button id="next">下一步</button></footer></main><div id="notice" role="status" aria-live="polite"></div><script>
 /* ===== data.js ===== */
@@ -169,40 +170,33 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
 /* ===== auth.js ===== */
 (() => {
   'use strict';
-  const sessionKey='door-hardware-auth-session-v1';
-  const trialAccount='trial',trialPassword='123456';
-  const formalAccount='demo',formalPassword='demo123';
-  const adminAccount='admin',adminPassword='admin123';
+  const sessionKey='hw_token';
   const style=document.createElement('style');
   style.textContent='.auth-mask{position:fixed;inset:0;z-index:100;background:rgba(28,39,47,.72);display:flex;align-items:center;justify-content:center;padding:20px}.auth-card{width:min(430px,100%);background:#fff;border-radius:10px;box-shadow:0 16px 50px #1118;padding:28px}.auth-card h2{margin:0 0 8px}.auth-card p{color:#5d6970;line-height:1.6;margin:8px 0 18px}.auth-card label{display:block;margin:12px 0;font-size:14px}.auth-card input{display:block;width:100%;margin-top:5px}.auth-card button{width:100%;margin-top:8px}.auth-tip{font-size:12px!important;background:#f3f6f8;border-radius:5px;padding:9px}.auth-error{color:#b42318!important;min-height:20px;margin:8px 0!important}.auth-buy{display:flex;gap:8px;margin-top:12px}.auth-buy button{margin:0;flex:1}.auth-status{color:#5b6064;font-size:13px}.auth-status.trial{color:#a15b00}.app-header .project-actions{display:flex;gap:7px;align-items:center;margin-left:auto}.app-header .project-actions button{margin-left:0!important;font-size:13px}.project-dialog{border:0;border-radius:10px;max-width:min(720px,94vw);width:720px;padding:0;box-shadow:0 15px 50px #1117}.project-dialog::backdrop{background:#1118}.project-dialog-inner{padding:20px}.project-dialog header{display:flex;justify-content:space-between;align-items:center}.project-dialog header h2{margin:0}.project-history-list{max-height:55vh;overflow:auto;margin-top:15px}.history-item{display:flex;align-items:center;gap:10px;border:1px solid #d7dfe3;border-radius:6px;padding:10px;margin:8px 0}.history-item main{padding:0;flex:1}.history-item strong{display:block}.history-item small{color:#66747c}.history-item button{padding:5px 8px}.trial-locked{opacity:.45;cursor:not-allowed!important}';
   document.head.append(style);
-  const session=()=>{try{return JSON.parse(sessionStorage.getItem(sessionKey)||'null')}catch{return null}};
-  const setSession=value=>sessionStorage.setItem(sessionKey,JSON.stringify(value));
-  const gate={user:null,limits:{trial:{history:1,export:false},formal:{history:999,export:true},admin:{history:999,export:true,debug:true}}};
+  const session=()=>localStorage.getItem(sessionKey);
+  const setSession=value=>localStorage.setItem(sessionKey,value);
+  const gate={user:null,limits:{admin:{history:999,export:true,debug:true}}};
   gate.can=function(action){return !!this.user&&!!this.limits[this.user.role]?.[action]};
-  gate.login=function(account,password){
-    const role=account===trialAccount&&password===trialPassword?'trial':account===formalAccount&&password===formalPassword?'formal':account===adminAccount&&password===adminPassword?'admin':'';
-    if(!role)return false;
-    this.user={account,role,loggedAt:new Date().toISOString()};setSession(this.user);return true;
-  };
-  const purchase=()=>{let dialog=document.getElementById('purchase-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='purchase-dialog';dialog.className='project-dialog';dialog.innerHTML='<div class="project-dialog-inner"><h2>正式账号购买</h2><p>微信和支付宝支付尚未接通，当前不能收款或自动发放正式账号。</p><p>本地测试账号：demo密码：demo123。此账号仅用于测试。</p><button type="button">关闭</button></div>';dialog.querySelector('button').onclick=()=>dialog.close();document.body.append(dialog)}dialog.showModal()};
+  const purchase=()=>{};
   function showLogin(){document.querySelector('.auth-mask')?.remove();
-    const mask=document.createElement('div');mask.className='auth-mask';mask.innerHTML='<form class="auth-card"><h2>门五金配置工具</h2><p>请输入账号和密码进入项目工作台。</p><label>账号<input name="account" autocomplete="username" required></label><label>密码<input name="password" type="password" autocomplete="current-password" required></label><p class="auth-tip">试用账号：<b>trial</b>密码：<b>123456</b><br>试用版可查看和编辑，暂不支持完整导出。</p><p class="auth-error" aria-live="polite"></p><button type="submit">登录</button><div class="auth-buy"><button type="button" data-pay="wechat">微信购买正式账号</button><button type="button" data-pay="alipay">支付宝购买正式账号</button></div></form>';
+    const mask=document.createElement('div');mask.className='auth-mask';mask.innerHTML='<form class="auth-card"><h2>门五金配置工具</h2><p>请输入账号和密码进入项目工作台。</p><label>账号<input name="account" autocomplete="username" required></label><label>密码<input name="password" type="password" autocomplete="current-password" required></label><p class="auth-tip">账号由服务器统一管理。</p><p class="auth-error" aria-live="polite"></p><button type="submit">登录</button></form>';
     document.body.append(mask);mask.querySelector('input').focus();
-    mask.querySelector('form').onsubmit=e=>{e.preventDefault();const f=new FormData(e.currentTarget);if(!gate.login(String(f.get('account')).trim(),String(f.get('password')))){mask.querySelector('.auth-error').textContent='账号或密码不正确，请重新输入。';return}mask.remove();updateStatus()};
-    mask.querySelectorAll('[data-pay]').forEach(b=>b.onclick=purchase);
+    mask.querySelector('form').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);try{const result=await window.hwApi.login(String(f.get('account')).trim(),String(f.get('password')));gate.user={...result,role:result.user.role};mask.remove();updateStatus();if(result.user.mustChangePassword)showChangePassword()}catch(error){mask.querySelector('.auth-error').textContent=error.message}};
+    mask.querySelectorAll('[data-pay]').forEach(b=>b.remove());
   }
+  function showChangePassword(){const mask=document.createElement('div');mask.className='auth-mask';mask.innerHTML='<form class="auth-card"><h2>首次登录请修改密码</h2><p>新密码至少 6 位。</p><label>新密码<input name="password" type="password" minlength="6" required></label><p class="auth-error"></p><button type="submit">保存新密码</button></form>';document.body.append(mask);mask.querySelector('form').onsubmit=async e=>{e.preventDefault();try{await window.hwApi.changePassword(new FormData(e.currentTarget).get('password'));mask.remove()}catch(error){mask.querySelector('.auth-error').textContent=error.message}}}
   function updateStatus(){
-    document.querySelector('.auth-status')?.replaceChildren(document.createTextNode(gate.user.role==='trial'?'试用版账号':gate.user.role==='admin'?'开发者超级账号':'本地全功能测试账号'));
-    document.querySelector('.auth-status')?.classList.toggle('trial',gate.user.role==='trial');
+    document.querySelector('.auth-status')?.replaceChildren(document.createTextNode(gate.user.role==='admin'?'管理员账号':'已登录账号'));
+    document.querySelector('.auth-status')?.classList.remove('trial');
     const exportButton=document.getElementById('export'),backup=document.getElementById('backup-data');
-    [exportButton,backup].forEach(button=>{if(!button)return;button.disabled=gate.user.role==='trial';button.title=gate.user.role==='trial'?'试用版暂不支持完整导出':'';button.classList.toggle('trial-locked',gate.user.role==='trial')});
+    [exportButton,backup].forEach(button=>{if(!button)return;button.disabled=false;button.title='';button.classList.remove('trial-locked')});
   }
   function init(){
     window.authGate=gate;window.authGate.purchase=purchase;
     const header=document.querySelector('.app-header');if(header&&!header.querySelector('.auth-status')){const span=document.createElement('span');span.className='auth-status';span.textContent='未登录';header.append(span)}
   }
-  function start(){const saved=session();gate.user=saved&&['trial','formal','admin'].includes(saved.role)?saved:null;init();const logout=document.createElement('button');logout.textContent='安全退出';logout.title='退出登录，可选择清除本机数据';logout.onclick=()=>{const choice=confirm('确定退出登录吗？\n\n点击「确定」：退出并清除本机所有项目数据（更安全，适合公用电脑）\n点击「取消」：仅退出登录，保留本机数据');sessionStorage.removeItem(sessionKey);if(choice){Object.keys(localStorage).filter(k=>k.startsWith('door-hardware')).forEach(k=>localStorage.removeItem(k))}location.reload()};logout.dataset.logout='';document.querySelector('.app-header')?.append(logout);if(!gate.user)showLogin();else updateStatus()}
+  async function start(){init();const logout=document.createElement('button');logout.textContent='安全退出';logout.title='退出登录';logout.onclick=()=>{localStorage.removeItem(sessionKey);location.reload()};logout.dataset.logout='';document.querySelector('.app-header')?.append(logout);try{if(session()){const result=(await window.hwApi.me()).data;gate.user={...result,role:result.role};updateStatus();if(result.must_change_password)showChangePassword()}else showLogin()}catch{showLogin()}}
   window.addEventListener('viewrender',()=>{if(gate.user)updateStatus()});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
   window.authGate=gate;

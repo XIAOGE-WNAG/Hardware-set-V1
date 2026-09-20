@@ -796,7 +796,8 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
     (data.products||[]).forEach(product=>{
       const code=String(product[0]||'');if(!code)return;
       const stored=findLibraryPage(code);
-      if(stored&&!data.pages[code])data.pages[code]=structuredClone(stored);
+      // 每次都按 SKU/代码 从库重新匹配：库后加载或刚绑定时，覆盖掉早期的空壳占位页
+      if(stored)data.pages[code]=structuredClone(stored);
       if(!data.pages[code]){data.pages[code]=makePage(product);missing.push(code);}
     });
     data._missingPages=missing;

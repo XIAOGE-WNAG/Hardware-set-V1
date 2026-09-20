@@ -1,0 +1,21 @@
+/* Scoped exclusively to the independent product-page library. */
+body.page-library-active #workflow,body.page-library-active>main{display:none!important}
+#product-page-library{padding:16px 20px;background:#eceff1;min-height:calc(100vh - 130px)}
+#product-page-library[hidden]{display:none!important}
+#product-page-library .library-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0}
+#product-page-library .library-import{display:flex;align-items:center;gap:8px;font-size:14px}
+#product-page-library .library-import input{max-width:280px}
+#product-page-library .library-viewport{overflow:auto;height:calc(100vh - 290px);min-height:350px;background:#dce0e3;border:1px solid #c8cdd0;padding:12px;overscroll-behavior:contain}
+#product-page-library .product-sheet{width:680px;min-width:680px;max-width:680px;margin:auto;padding:25px 45px 20px;background:white}
+#product-page-library .page-switcher select{max-width:340px}
+#product-page-library [data-library-status]{color:#125e40;white-space:pre-wrap;margin:6px 0;font-size:14px}
+#product-page-library .library-editor{padding:18px;background:#fff;border:1px solid #c8cdd0}
+#product-page-library .library-editor input:not([type=file]),#product-page-library textarea{width:100%;padding:8px;border:1px solid #b9c0c4;font:inherit}
+#product-page-library textarea{min-height:90px;resize:vertical}
+#product-page-library .library-thumb{max-width:140px;max-height:100px;object-fit:contain}
+#product-page-library .library-editor-actions{position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:12px;background:#f3f5f5;padding:14px;z-index:2}
+#product-page-library .brand-resize-handle,#product-page-library .qr-resize-handle,#product-page-library .product-image-resize-handle{display:none}
+@media(max-width:700px){#product-page-library{padding:10px}#product-page-library .library-viewport{height:65vh}}
+
+#product-page-library .source-file{margin:18px auto;padding:12px;background:#fff;border:1px solid #c8cdd0;max-width:680px}#product-page-library .source-file embed{display:block;margin-top:10px;min-height:520px}
+#product-page-library .pdf-source-pages{display:flex;flex-direction:column;align-items:center;gap:14px;background:#dce0e3;padding:12px}#product-page-library .pdf-source-page{display:block;width:min(100%,794px);height:auto;background:#fff;box-shadow:0 1px 5px #899198}#product-page-library .pdf-error{color:#a33;padding:20px;background:#fff}

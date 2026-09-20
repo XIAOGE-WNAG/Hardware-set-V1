@@ -8,8 +8,9 @@ function migrateLocal(data={}) {
   const t=now(), project=data.project||{};
   let projectId=project.id && one('SELECT id FROM projects WHERE id=?',[project.id])?.id;
   if(!projectId&&project.name) projectId=one('SELECT id FROM projects WHERE name=? AND plan_code=? ORDER BY id LIMIT 1',[project.name,project.planCode||''])?.id;
-  if(projectId) db.prepare('UPDATE projects SET name=?,plan_code=?,settings=?,updated_at=? WHERE id=?').run(project.name||'迁移项目',project.planCode||'',json(project),t,projectId);
-  else projectId=Number(db.prepare('INSERT INTO projects(name,plan_code,settings,created_at,updated_at) VALUES(?,?,?,?,?)').run(project.name||'迁移项目',project.planCode||'',json(project),t,t).lastInsertRowid);
+  const settings={...project}; if(data.page) settings.page=data.page;
+  if(projectId) db.prepare('UPDATE projects SET name=?,plan_code=?,settings=?,updated_at=? WHERE id=?').run(project.name||'迁移项目',project.planCode||'',json(settings),t,projectId);
+  else projectId=Number(db.prepare('INSERT INTO projects(name,plan_code,settings,created_at,updated_at) VALUES(?,?,?,?,?)').run(project.name||'迁移项目',project.planCode||'',json(settings),t,t).lastInsertRowid);
   const products=new Map(), sets=new Map();
   const productRows=[...(data.products||[])];
   for(const row of data.productDatabase||[]) if(Array.isArray(row)) productRows.push({skuCode:row[0],name:row[1]||row[0],model:row[0],specs:{description:row[1]||''},unit:row[2]||'',brand:row[3]||''});

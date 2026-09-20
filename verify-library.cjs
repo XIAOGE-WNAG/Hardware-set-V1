@@ -17,6 +17,7 @@ async function main(){
   assert.equal((await request('/api/projects',{headers:{Authorization:'Bearer invalid'}})).status,401);
   assert.equal((await request('/api/auth/me',{headers:auth})).status,200);
   const project=await request('/api/projects',{method:'POST',headers:auth,body:JSON.stringify({name:'验证项目',planCode:'V'})});assert.equal(project.status,201);const projectId=project.body.data.id;
+  assert.equal((await request(`/api/state?projectId=${projectId}`,{headers:auth})).status,200);
   const bundle={project:{name:'迁移验证项目',planCode:'M'},productDatabase:[['MIG-1','迁移产品','只','GMT']],doors:[],sets:[],products:[]};
   assert.equal((await request('/api/migrate/local',{method:'POST',headers:auth,body:JSON.stringify({data:bundle})})).status,200);
   assert.equal((await request('/api/migrate/local',{method:'POST',headers:auth,body:JSON.stringify({data:bundle})})).status,200);

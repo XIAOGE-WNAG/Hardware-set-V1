@@ -82,7 +82,12 @@
       const snapshot=pendingData; pendingData=null;
       const legacy=hasLegacyData(),dataOk=snapshot?await sync(snapshot):(legacy?await sync(window.caseData):true),pagesOk=(snapshot||legacy)?await syncPages():true;
       if(dataOk&&pagesOk)clearLegacyData();
-      await hydratePages(); await hydrateState(); await hydrateProductDatabase();
+      await hydratePages();
+      // 仅登录/首次(无 snapshot)时才从服务器回拉并整体替换 caseData；
+      // 本地刚保存后不再回拉，避免 workbench.render→viewrender→renderCurrent 重建整页闪屏，
+      // 也避免 hydrateState 不含 pages、把刚编辑的产品单页冲掉导致下拉切换闪退。
+      if(!snapshot) await hydrateState();
+      await hydrateProductDatabase();
     },500);
   }
   function attach() {

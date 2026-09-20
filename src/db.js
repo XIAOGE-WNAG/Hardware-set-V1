@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
+const seed = require('./seed');
 
 const root = path.resolve(__dirname, '..');
 const dataDir = path.resolve(process.env.HW_DATA_DIR || path.join(root, 'data'));
@@ -24,17 +25,16 @@ function initDb() {
     try { db.exec(`ALTER TABLE ${table} ADD COLUMN tenant_id TEXT NOT NULL DEFAULT 'default'`); } catch {}
   }
   if (!db.prepare('SELECT 1 FROM categories LIMIT 1').get()) {
-    db.prepare('INSERT INTO categories(name,template_schema,sort) VALUES(?,?,?)').run('示例五金','{}',1);
+    for (const item of seed.categories) db.prepare('INSERT INTO categories(name,template_schema,sort) VALUES(?,?,?)').run(item.name,JSON.stringify(item.templateSchema||{}),item.sort||0);
   }
   if (!db.prepare('SELECT 1 FROM products LIMIT 1').get()) {
     const category = db.prepare('SELECT id FROM categories ORDER BY id LIMIT 1').get();
     const add = db.prepare('INSERT INTO products(sku_code,name,category_id,brand,model,finish,unit,specs,sort) VALUES(?,?,?,?,?,?,?,?,?)');
-    add.run('DEMO-001','示例闭门器',category.id,'GMT','DEMO-001','银色','只','{"description":"云端演示产品"}',1);
-    add.run('DEMO-002','示例合页',category.id,'GMT','DEMO-002','拉丝不锈钢','片','{"description":"云端演示产品"}',2);
+    for (const item of seed.products) add.run(item.skuCode,item.name,category.id,item.brand||'',item.model||'',item.finish||'',item.unit||'',JSON.stringify(item.specs||{}),item.sort||0);
   }
   if (!db.prepare('SELECT 1 FROM projects LIMIT 1').get()) {
-    const t = new Date().toISOString();
-    db.prepare('INSERT INTO projects(name,plan_code,settings,created_at,updated_at) VALUES(?,?,?,?,?)').run('云端演示项目','DEMO','{"source":"seed"}',t,t);
+    const t = new Date().toISOString(), add=db.prepare('INSERT INTO projects(name,plan_code,settings,created_at,updated_at) VALUES(?,?,?,?,?)');
+    for (const item of seed.projects) add.run(item.name,item.planCode||'',JSON.stringify(item.settings||{}),t,t);
   }
 }
 

@@ -92,6 +92,14 @@ body[data-step="4"] .viewport{background:#dce0e3}
 .pager{margin-top:10px}
 .page-switcher{position:fixed!important;display:flex!important;top:60px;left:calc(var(--rail-w) + 50%);transform:translateX(-50%);z-index:40;margin:0!important;padding:8px 12px;background:#f1f7fa;border:1px solid #c6dde7;border-radius:8px;box-shadow:0 3px 10px rgba(16,74,102,.18);gap:10px;align-items:center;max-width:calc(100vw - var(--rail-w) - 36px)}
 .page-switcher select{min-width:240px}
+/* 弹窗约束到右栏，避免被固定导航遮挡 */
+dialog[open]{display:block;position:fixed;top:14px;bottom:14px;left:calc(var(--rail-w) + 14px);right:14px;width:auto;max-width:none;max-height:none;height:auto;margin:0;padding:0;z-index:80;overflow:auto;border-radius:8px;box-shadow:0 14px 44px rgba(7,27,43,.45);background:#fff}
+dialog[open]>form{min-height:calc(100vh - 28px);display:flex;flex-direction:column}
+dialog header{position:sticky;top:0;z-index:3;background:#f3f5f5}
+dialog footer{position:sticky;bottom:0;z-index:3;background:#f3f5f5}
+dialog #edit-fields{flex:1 1 auto;min-height:0;overflow:auto}
+dialog .edit-table-wrap{max-height:none}
+body:has(dialog[open]){overflow:hidden}
 #notice{left:calc(var(--rail-w) + (100vw - var(--rail-w))/2)}
 @media(max-width:960px){
 .app-header{position:static!important;width:auto;height:auto;flex-direction:row;align-items:center;overflow:visible}
@@ -105,6 +113,7 @@ nav#workflow button{justify-content:center;text-align:center;flex:1 1 auto}
 main{margin-left:0;min-height:0}
 #notice{left:50%}
 .page-switcher{position:static!important;transform:none;max-width:none;margin:0 0 12px!important}
+dialog[open]{left:10px;right:10px;top:10px;bottom:10px}
 }
 @media print{.app-header,#project-hub,nav#workflow{position:static!important;display:none!important}main{margin-left:0!important}}
 </style>

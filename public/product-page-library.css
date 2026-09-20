@@ -19,3 +19,6 @@ body.page-library-active>main{display:none!important}
 
 #product-page-library .source-file{margin:18px auto;padding:12px;background:#fff;border:1px solid #c8cdd0;max-width:680px}#product-page-library .source-file embed{display:block;margin-top:10px;min-height:520px}
 #product-page-library .pdf-source-pages{display:flex;flex-direction:column;align-items:center;gap:14px;background:#dce0e3;padding:12px}#product-page-library .pdf-source-page{display:block;width:min(100%,794px);height:auto;background:#fff;box-shadow:0 1px 5px #899198}#product-page-library .pdf-error{color:#a33;padding:20px;background:#fff}
+
+/* 库视图内：产品单页选择条回到文档流，不悬浮压住导入行 */
+#product-page-library .page-switcher{position:static!important;transform:none!important;top:auto!important;left:auto!important;max-width:none!important;margin:0 0 12px!important;box-shadow:none!important;}

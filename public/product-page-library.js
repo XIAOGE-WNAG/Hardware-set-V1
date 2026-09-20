@@ -247,7 +247,7 @@
   // Navigation switches workspace before the existing button handler runs.
   document.addEventListener('click',e=>{
     if(!state.active)return;
-    const button=e.target.closest('#project-hub button');
+    const button=e.target.closest('#project-hub button, nav#workflow button');
     if(button&&!button.hasAttribute('data-product-page-database')&&!close()){e.preventDefault();e.stopImmediatePropagation();}
   },true);
   window.addEventListener('beforeunload',e=>{if(state.dirty){e.preventDefault();e.returnValue='';}});

@@ -15,6 +15,7 @@
     window.saveProductPageDb(next); // Commit storage before changing in-memory data.
     for(const key of Object.keys(db())) delete db()[key];
     Object.assign(db(), next);
+    window.hwBackendBridge?.syncPages().then(ok=>{if(ok)window.hwBackendBridge.clearLegacyData();});
   }
   function download(value, name) {
     const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)],{type:'application/json'}));

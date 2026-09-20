@@ -2,6 +2,9 @@
   'use strict';
   const token = () => localStorage.getItem('hw_token');
   let timer = 0, wrapped = false;
+  const businessKey = key => /^(door-hardware-project-|door-hardware-product-database|door-hardware-product-page-database|door-hardware-auth-session|door-hardware-project-history)/.test(key);
+  const hasLegacyData = () => { for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&businessKey(key))return true;} return false; };
+  function clearLegacyData(){const remove=[];for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&businessKey(key))remove.push(key);}remove.forEach(key=>localStorage.removeItem(key));}
   async function hydratePages() {
     if (!token() || !window.hwApi || !window.productPageDb || Object.keys(window.productPageDb).length) return;
     try {
@@ -38,20 +41,20 @@
   }
   async function sync(data) {
     if (!token() || !window.hwApi || !data) return;
-    try { await window.hwApi.request('/api/migrate/local',{method:'POST',body:JSON.stringify({data})}); }
-    catch (error) { console.warn('[backend-sync]',error.message); }
+    try { await window.hwApi.request('/api/migrate/local',{method:'POST',body:JSON.stringify({data})}); return true; }
+    catch (error) { console.warn('[backend-sync]',error.message); return false; }
   }
   async function syncPages() {
-    if (!token() || !window.productPageDb || !window.hwApi) return;
-    try { await window.hwApi.request('/api/product-pages/bulk',{method:'POST',body:JSON.stringify({pages:window.productPageDb})}); }
-    catch (error) { console.warn('[page-sync]',error.message); }
+    if (!token() || !window.productPageDb || !window.hwApi) return true;
+    try { await window.hwApi.request('/api/product-pages/bulk',{method:'POST',body:JSON.stringify({pages:window.productPageDb})}); return true; }
+    catch (error) { console.warn('[page-sync]',error.message); return false; }
   }
   async function syncVersion(item) {
     if(!token()||!window.hwApi||!item?.data)return;
     try{const projects=(await window.hwApi.request('/api/projects')).data||[],project=projects.find(p=>p.name===item.projectName);if(project)await window.hwApi.request('/api/projects/'+project.id+'/versions',{method:'POST',body:JSON.stringify({name:item.name,snapshot:item.data})});}catch(error){console.warn('[version-sync]',error.message);}
   }
   function schedule() {
-    clearTimeout(timer); timer=setTimeout(async () => { await sync(window.caseData); await syncPages(); await hydratePages(); await hydrateState(); await hydrateProductDatabase(); },500);
+    clearTimeout(timer); timer=setTimeout(async () => { const legacy=hasLegacyData(); if(legacy){const dataOk=await sync(window.caseData),pagesOk=await syncPages();if(dataOk&&pagesOk)clearLegacyData();} await hydratePages(); await hydrateState(); await hydrateProductDatabase(); },500);
   }
   function attach() {
     if (!window.projectStore || wrapped) return;
@@ -62,5 +65,5 @@
   window.addEventListener('hw-auth-login',schedule);
   window.addEventListener('viewrender',schedule);
   const poll=setInterval(() => { attach(); if(wrapped) clearInterval(poll); },100);
-  window.hwBackendBridge={sync,syncPages,syncVersion};
+  window.hwBackendBridge={sync,syncPages,syncVersion,clearLegacyData};
 })();

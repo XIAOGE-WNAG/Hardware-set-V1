@@ -90,6 +90,8 @@ main .tools{margin-bottom:6px}
 body:has(#data-editor[open]) .viewport{max-height:calc(100vh - 540px)!important;min-height:200px}
 body[data-step="4"] .viewport{background:#dce0e3}
 .pager{margin-top:10px}
+.page-switcher{position:fixed!important;display:flex!important;top:60px;left:calc(var(--rail-w) + 50%);transform:translateX(-50%);z-index:40;margin:0!important;padding:8px 12px;background:#f1f7fa;border:1px solid #c6dde7;border-radius:8px;box-shadow:0 3px 10px rgba(16,74,102,.18);gap:10px;align-items:center;max-width:calc(100vw - var(--rail-w) - 36px)}
+.page-switcher select{min-width:240px}
 #notice{left:calc(var(--rail-w) + (100vw - var(--rail-w))/2)}
 @media(max-width:960px){
 .app-header{position:static!important;width:auto;height:auto;flex-direction:row;align-items:center;overflow:visible}
@@ -102,6 +104,7 @@ nav#workflow{position:static!important;width:auto;top:auto;bottom:auto;flex-dire
 nav#workflow button{justify-content:center;text-align:center;flex:1 1 auto}
 main{margin-left:0;min-height:0}
 #notice{left:50%}
+.page-switcher{position:static!important;transform:none;max-width:none;margin:0 0 12px!important}
 }
 @media print{.app-header,#project-hub,nav#workflow{position:static!important;display:none!important}main{margin-left:0!important}}
 </style>

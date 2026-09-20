@@ -1,6 +1,6 @@
 /* Scoped exclusively to the independent product-page library. */
-body.page-library-active #workflow,body.page-library-active>main{display:none!important}
-#product-page-library{padding:16px 20px;background:#eceff1;min-height:calc(100vh - 130px)}
+body.page-library-active>main{display:none!important}
+#product-page-library{margin-left:var(--rail-w,238px);padding:16px 20px;background:#eceff1;min-height:calc(100vh - 130px)}
 #product-page-library[hidden]{display:none!important}
 #product-page-library .library-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0}
 #product-page-library .library-import{display:flex;align-items:center;gap:8px;font-size:14px}

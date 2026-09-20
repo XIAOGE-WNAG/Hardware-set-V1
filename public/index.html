@@ -117,16 +117,15 @@ dialog[open]{left:10px;right:10px;top:10px;bottom:10px}
 }
 @media print{.app-header,#project-hub,nav#workflow{position:static!important;display:none!important}main{margin-left:0!important}}
 </style>
-<style id="border-supreme">
-.product-frame,.product-frame *,.product-frame table,.product-frame td,.product-frame th,.product-frame tr,.product-frame caption{border:1px solid #111!important;border-width:1px!important;box-sizing:border-box!important}
-.product-frame .product-visuals{border:1px solid #111!important;border-top:0!important;border-left:0!important;border-right:0!important}
-.product-frame .product-visuals>div{border:1px solid #111!important;border-top:0!important}
-.product-frame .product-visuals>div+div{border-left:1px solid #111!important}
-.product-frame .caption,.product-frame .blue-band,.product-frame .features{border-left:0!important;border-right:0!important}
-</style><style id="border-authoritative">
+<style id="border-exact">
 .product-frame{border:1px solid #111!important;box-sizing:border-box!important}
-.product-frame .caption,.product-frame .blue-band,.product-frame .order-table,.product-frame .features{border-left:0!important;border-right:0!important}
+.product-frame table,.product-frame th,.product-frame td{border:1px solid #111!important;border-width:1px!important}
+.product-frame .caption,.product-frame .blue-band,.product-frame .features{border-left:0!important;border-right:0!important}
+.product-frame .product-visuals{border:0!important}
+.product-frame .product-visuals>div{border:0!important}
 .product-frame .product-visuals>div+div{border-left:1px solid #111!important}
+.print-page .product-frame{border:1px solid #111!important}
+.print-page .product-frame table,.print-page .product-frame th,.print-page .product-frame td{border:1px solid #111!important}
 </style><style id="a4-master-template">
 /* 以合页PDF原版p-01为唯一基准重排HTML可编辑页；仅作用HTML单页，不触碰PDF原页(wb-print-pdf/canvas) */
 .product-sheet{width:794px!important;max-width:794px!important;min-width:0!important;min-height:1123px!important;margin:0 auto!important;padding:18mm 72px 72px!important;box-sizing:border-box;background:#fff;position:relative}

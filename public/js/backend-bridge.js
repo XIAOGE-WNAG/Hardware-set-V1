@@ -2,6 +2,14 @@
   'use strict';
   const token = () => localStorage.getItem('hw_token');
   let timer = 0, wrapped = false;
+  async function hydratePages() {
+    if (!token() || !window.hwApi || !window.productPageDb || Object.keys(window.productPageDb).length) return;
+    try {
+      const result=await window.hwApi.request('/api/product-pages');
+      const pages=Object.fromEntries((result.data||[]).map(row=>[row.sku_code,row.page]));
+      if(Object.keys(pages).length){Object.assign(window.productPageDb,pages);window.saveProductPageDb(window.productPageDb);window.dispatchEvent(new Event('product-pages-hydrated'));}
+    } catch (error) { console.warn('[page-hydrate]',error.message); }
+  }
   async function sync(data) {
     if (!token() || !window.hwApi || !data) return;
     try { await window.hwApi.request('/api/migrate/local',{method:'POST',body:JSON.stringify({data})}); }
@@ -9,15 +17,11 @@
   }
   async function syncPages() {
     if (!token() || !window.productPageDb || !window.hwApi) return;
-    for (const [sku,page] of Object.entries(window.productPageDb)) {
-      try { await window.hwApi.request('/api/product-pages/'+encodeURIComponent(sku),{method:'PUT',body:JSON.stringify({skuCode:sku,page})}); }
-      catch (error) {
-        if (/404/.test(error.message)) try { await window.hwApi.request('/api/product-pages',{method:'POST',body:JSON.stringify({skuCode:sku,page})}); } catch (e) { console.warn('[page-sync]',e.message); }
-      }
-    }
+    try { await window.hwApi.request('/api/product-pages/bulk',{method:'POST',body:JSON.stringify({pages:window.productPageDb})}); }
+    catch (error) { console.warn('[page-sync]',error.message); }
   }
   function schedule() {
-    clearTimeout(timer); timer=setTimeout(() => { sync(window.caseData); syncPages(); },500);
+    clearTimeout(timer); timer=setTimeout(() => { hydratePages().finally(() => { sync(window.caseData); syncPages(); }); },500);
   }
   function attach() {
     if (!window.projectStore || wrapped) return;

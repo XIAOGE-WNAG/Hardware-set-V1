@@ -122,19 +122,24 @@
     window.scrollTo(0,state.scroll);return true;
   }
   function pruneOrphans() {
-    // 清理历史遗留的空壳条目：既无名称、又无上传源文件/图片的空对象（早年按行号 0..N 误建），
-    // 否则下拉里会出现大量无文件名的空选项。
+    // 清理历史遗留的空壳条目（早年按行号 0..N 误建），否则下拉里会出现大量无文件名的空选项。
     const target=db(); if(!target) return;
+    let changed=false;
     for(const key of Object.keys(target)){
       const p=target[key]||{};
       const hasName=String(p.name||'').trim();
-      const isRowIndex=/^\d+$/.test(String(key).trim());
-      // 1) 完全空壳：既无名称又无任何内容/源文件
-      const empty=!hasName && !p.sourceFile && !p.photo && !p.drawing && !(p.variants||[]).length && !(p.features||[]).length;
-      // 2) 历史行号残留：key 为纯数字、无名称、无源文件（真实 SKU 均含字母/横杠，不会纯数字）
-      const rowJunk=isRowIndex && !hasName && !p.sourceFile;
-      if(empty||rowJunk) delete target[key];
+      const hasSku=String(p.skuCode||'').trim();
+      const trimmedKey=String(key).trim();
+      // 纯数字 key（0..N 行号残留）：真实 SKU/文件名均含字母，纯数字必为历史垃圾。
+      // 无名称且无 SKU 一律删，无论是否带 sourceFile/图片。
+      const isNumericKey=/^\d+$/.test(trimmedKey);
+      const rowJunk=isNumericKey && !hasName && !hasSku;
+      // 完全空壳：既无名称/SKU 又无任何内容/源文件
+      const empty=!hasName && !hasSku && !p.sourceFile && !p.photo && !p.drawing && !(p.variants||[]).length && !(p.features||[]).length;
+      if(rowJunk||empty){ delete target[key]; changed=true; }
     }
+    // 真正删掉了就持久化，避免下次打开又从 localStorage 加载回来
+    if(changed){ try{ const copy={...target}; window.saveProductPageDb(copy); window.hwBackendBridge?.syncPages(); }catch(e){} }
   }
   function render(status='') {
     pruneOrphans();

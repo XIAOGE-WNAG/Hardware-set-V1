@@ -117,6 +117,39 @@ dialog[open]{left:10px;right:10px;top:10px;bottom:10px}
 }
 @media print{.app-header,#project-hub,nav#workflow{position:static!important;display:none!important}main{margin-left:0!important}}
 </style>
+<style id="a4-master-template">
+/* 以合页PDF原版p-01为唯一基准重排HTML可编辑页；仅作用HTML单页，不触碰PDF原页(wb-print-pdf/canvas) */
+.product-sheet{width:794px!important;max-width:794px!important;min-width:0!important;min-height:1123px!important;margin:0 auto!important;padding:0 72px!important;box-sizing:border-box;background:#fff;position:relative}
+.product-sheet-content{padding:0!important}
+.product-sheet-content .gmt{height:50px!important;margin:38px 0 0!important;padding:0;font:bold 34px Georgia;color:#00a1d5;line-height:50px}
+.product-sheet-content .product-frame{margin:0;border:1px solid #111;box-sizing:border-box}
+.product-sheet-content .product-frame .caption{padding:9px 14px!important;font-size:18px!important;font-weight:bold;font-family:SimSun,serif;text-align:left}
+.product-sheet-content .blue-band{padding:7px 14px!important;font-size:14px!important;font-family:SimSun,serif}
+.product-sheet-content .product-visuals{display:grid!important;grid-template-columns:44% 56%!important;height:359px!important;min-height:0!important;background:#fff}
+.product-sheet-content .product-visuals>div{min-height:0!important;padding-top:0!important}
+.product-sheet-content .product-visuals>div::before{display:none!important}
+.product-sheet-content .product-visuals>div+div{border-left:1px solid #111}
+.product-sheet-content .order-table{table-layout:fixed;width:100%}
+.product-sheet-content .order-table th{font-size:13px!important;padding:5px 4px!important}
+.product-sheet-content .order-table td{height:28px;font-size:13px}
+.product-sheet-content .features{min-height:120px!important;font:13px/1.7 SimSun,serif;padding:8px 14px!important}
+.product-sheet-content .product-footer{margin:24px 0 0!important;width:100%!important}
+/* 打印：同一套版面，仅适配打印边距区，不缩放变形 */
+@media print{
+.print-page{width:210mm!important;height:276mm!important;max-height:276mm!important;overflow:hidden}
+.print-page .product-sheet{width:756px!important;max-width:756px!important;min-height:0!important;margin:0 auto!important;padding:0 53px!important}
+.print-page .gmt{height:44px!important;margin:30px 0 0!important;font-size:30px;line-height:44px}
+.print-page .product-frame .caption{padding:7px 12px!important;font-size:15px}
+.print-page .blue-band{padding:5px 12px!important;font-size:12px}
+.print-page .product-visuals{height:330px!important}
+.print-page .order-table th{font-size:11px!important;padding:3px}
+.print-page .order-table td{height:24px;font-size:11px}
+.print-page .features{min-height:90px!important;font:11px/1.5 SimSun,serif;padding:6px 12px!important}
+.print-page .footer-image-box{position:static!important;width:100%!important;height:56px!important;margin:18px 0 0!important;bottom:auto!important}
+.print-page .footer-image-box .product-image-layer{position:static!important;inset:auto!important;transform:none!important}
+.print-page .footer-image-layer-img{position:static!important;width:100%!important;max-width:100%!important;right:auto!important;bottom:auto!important}
+}
+</style>
 </head><body>
 <header class="app-header"><strong>门五金配置</strong><span>钱江世纪城总部大楼 · 2标段</span><button id="print">打印 / 另存 PDF</button></header><nav id="workflow" aria-label="4个功能模块"></nav><main><div class="tools"><h1 id="module-title"></h1><div class="controls"><label id="search-label">查找 <input id="search" type="search" placeholder="门号、位置、产品代码"></label><label id="set-label" hidden>配置组 <select id="set-select"><option>SET-01</option><option>SET-02</option><option>SET-02D</option></select></label><button id="export">导出排版表格</button></div></div><p class="source-note" id="source-note"></p><div id="viewport" class="viewport" tabindex="0" aria-label="表格区域，可横向滚动"><article id="document" class="document"></article></div><footer class="pager"><button id="previous">上一步</button><span id="step-description"></span><button id="next">下一步</button></footer></main><div id="notice" role="status" aria-live="polite"></div><script>
 /* ===== data.js ===== */

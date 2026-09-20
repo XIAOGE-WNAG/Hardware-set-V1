@@ -29,8 +29,9 @@ async function main(){
   assert.equal((await request('/api/product-pages',{method:'POST',headers:auth,body:JSON.stringify({skuCode:'VERIFY-1',page:{name:'验证单页',variants:[['VERIFY-1','','','']]}})})).status,201);
   assert.equal((await request('/api/product-pages/VERIFY-1',{headers:auth})).body.data.page.name,'验证单页');
   assert.equal((await request('/api/product-pages/bulk',{method:'POST',headers:auth,body:JSON.stringify({pages:{'VERIFY-2':{name:'批量单页'}}})})).body.data.count,1);
+  const imageForm=new FormData();imageForm.append('file',new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=','base64')],{type:'image/png'}),'verify.png');const imageUpload=await fetch(base+'/api/upload/image',{method:'POST',headers:{Authorization:`Bearer ${token}`},body:imageForm});assert.equal(imageUpload.status,201);const imageBody=await imageUpload.json();assert.match(imageBody.data.url,/^\/uploads\//);fs.rmSync(path.join(__dirname,'public',imageBody.data.url.replace(/^\//,'')),{force:true});
   const documentForm=new FormData();documentForm.append('file',new Blob([Buffer.from('%PDF-1.4 verify')],{type:'application/pdf'}),'verify.pdf');const uploaded=await fetch(base+'/api/upload/document',{method:'POST',headers:{Authorization:`Bearer ${token}`},body:documentForm});assert.equal(uploaded.status,201);const uploadedBody=await uploaded.json();fs.rmSync(path.join(__dirname,'public',uploadedBody.data.url.replace(/^\//,'')),{force:true});
   const xlsx=await fetch(base+`/api/export/xlsx?projectId=${projectId}`,{headers:auth});assert.equal(xlsx.status,200);assert.equal(xlsx.headers.get('content-type'),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  console.log('PASS health/auth/CRUD/BOM/xlsx');
+  console.log('PASS health/auth/CRUD/BOM/upload/xlsx');
 }
 main().catch(error=>{console.error('FAIL',error);process.exitCode=1}).finally(()=>{child.kill();});

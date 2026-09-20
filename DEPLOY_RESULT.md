@@ -23,9 +23,10 @@ npm start
 - 上传：`/api/upload/image`、`/api/upload/document`
 - 导入导出：`/api/import/excel`、`/api/export/xlsx`、`/api/export/xlsx/template`
 - 迁移与恢复：`/api/migrate/local`、`/api/state`
+- 产品单页解析：PDF 结构化文本与图片区段提取，DOCX 文本与内嵌图片提取。
 
 ## 自测结果
 
 `npm run verify` 已通过，覆盖健康检查、未授权拦截、登录、项目/产品/五金组/门表 CRUD、BOM 按樘数加权、产品单页、文档上传和真实 XLSX 响应。静态首页与 API 资源在本地临时端口启动验证通过。
 
-最新提交：`f644a11`
+最新提交：`f652333`

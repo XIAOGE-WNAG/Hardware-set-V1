@@ -121,8 +121,8 @@ dialog[open]{left:10px;right:10px;top:10px;bottom:10px}
 /* 以合页PDF原版p-01为唯一基准重排HTML可编辑页；仅作用HTML单页，不触碰PDF原页(wb-print-pdf/canvas) */
 .product-sheet{width:794px!important;max-width:794px!important;min-width:0!important;min-height:1123px!important;margin:0 auto!important;padding:72px!important;box-sizing:border-box;background:#fff;position:relative}
 .product-sheet-content{padding:0!important;display:flex!important;flex-direction:column;min-height:1123px}
-.product-sheet-content .product-frame{flex:1 1 auto;display:flex;flex-direction:column}
-.product-sheet-content .product-frame .features{flex:1 1 auto}
+.product-sheet-content .product-frame{flex:0 0 auto;display:block}
+.product-sheet-content .product-frame .features{flex:0 0 auto;min-height:120px!important}
 .product-sheet-content .product-footer{margin-top:auto!important}
 .product-sheet-content .gmt{height:50px!important;margin:38px 0 0!important;padding:0;font:bold 34px Georgia;color:#00a1d5;line-height:50px}
 .product-sheet-content .product-frame{margin:0;border:1px solid #111;box-sizing:border-box}
@@ -150,7 +150,7 @@ dialog[open]{left:10px;right:10px;top:10px;bottom:10px}
 .print-page .order-table th{font-size:11px!important;padding:3px}
 .print-page .order-table td{height:24px;font-size:11px}
 .print-page .features{min-height:90px!important;font:11px/1.5 SimSun,serif;padding:6px 12px!important}
-.print-page .footer-image-box{position:static!important;width:100%!important;height:56px!important;margin:0!important;bottom:auto!important}.print-page .product-frame{flex:1 1 auto}.print-page .product-footer{margin-top:auto!important}
+.print-page .footer-image-box{position:static!important;width:100%!important;height:56px!important;margin:0!important;bottom:auto!important}.print-page .product-frame{flex:0 0 auto}.print-page .product-footer{margin-top:auto!important}
 .print-page .footer-image-box .product-image-layer{position:static!important;inset:auto!important;transform:none!important}
 .print-page .footer-image-layer-img{position:static!important;width:100%!important;max-width:100%!important;right:auto!important;bottom:auto!important}
 }

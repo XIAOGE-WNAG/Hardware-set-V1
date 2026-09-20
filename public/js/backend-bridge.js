@@ -5,6 +5,25 @@
   const businessKey = key => /^(door-hardware-project-|door-hardware-product-database|door-hardware-product-page-database|door-hardware-auth-session|door-hardware-project-history)/.test(key);
   const hasLegacyData = () => { for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&businessKey(key))return true;} return false; };
   function clearLegacyData(){const remove=[];for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&businessKey(key))remove.push(key);}remove.forEach(key=>localStorage.removeItem(key));}
+  async function uploadDataUrl(value){
+    if(!/^data:image\/(?:png|jpeg|webp);base64,/i.test(value)||!window.hwApi)return value;
+    const [header,encoded]=value.split(',',2),mime=header.slice(5,header.indexOf(';'))||'image/png';
+    const bytes=Uint8Array.from(atob(encoded),char=>char.charCodeAt(0));
+    const form=new FormData;form.append('file',new Blob([bytes],{type:mime}),'inline-image.'+(mime==='image/jpeg'?'jpg':mime.split('/')[1]));
+    return (await window.hwApi.request('/api/upload/image',{method:'POST',body:form})).data.url;
+  }
+  async function serverizeImages(value,seen=new WeakSet(),parentKey=''){
+    if(typeof value==='string')return await uploadDataUrl(value);
+    if(!value||typeof value!=='object'||seen.has(value))return value;
+    seen.add(value);
+    if(Array.isArray(value)){for(let i=0;i<value.length;i++)value[i]=await serverizeImages(value[i],seen,String(i));return value;}
+    for(const key of Object.keys(value)){
+      // Uploaded source documents already have a URL; never treat their optional fallback data as an image.
+      if(parentKey==='sourceFile'&&key==='data')continue;
+      value[key]=await serverizeImages(value[key],seen,key);
+    }
+    return value;
+  }
   async function hydratePages() {
     if (!token() || !window.hwApi || !window.productPageDb || Object.keys(window.productPageDb).length) return;
     try {
@@ -26,7 +45,7 @@
     const sets=(state.sets||[]).map(s=>({code:s.set_code,location:s.name||'',types:s.door_type||'',door:s.material||'',qty:0,items:(s.items||[]).map(i=>{const p=productById.get(i.product_id)||i;return [p.sku_code||'',p.name||'',p.finish||'',p.unit||'',Number(i.quantity_per_door)||1,i.brand||''];})}));
     const setById=new Map((state.sets||[]).map((s,i)=>[s.id,sets[i].code]));
     const doors=(state.doors||[]).map((d,i)=>[Number(d.seq)||i+1,d.floor||'',d.door_number||'',d.door_model||'',d.room_function||'',d.width??'/',d.height??'/',d.thickness??'/',Number(d.qty)||1,d.material||'',d.door_type||'',setById.get(d.set_id)||'',d.section||'',d.remark||'']);
-    const productRows=products.map(p=>[p.sku_code,p.name,p.model||'',Array.isArray(p.specs?.features)?p.specs.features:(p.specs?.description?[p.specs.description]:[]),p.finish||'',p.unit||'',0,null,p.price||'', '',/^data:image\//.test(p.main_image_url||'')?p.main_image_url:null,p.brand||'']);
+    const productRows=products.map(p=>[p.sku_code,p.name,p.model||'',Array.isArray(p.specs?.features)?p.specs.features:(p.specs?.description?[p.specs.description]:[]),p.finish||'',p.unit||'',0,null,p.price||'', '',p.main_image_url||null,p.brand||'']);
     const page=settings.page||window.caseData?.page||{brand:'',name:'',variants:[],features:[],footer:'',photo:null,drawing:null};
     return {doors,sets,products:productRows,project:{...settings,name:source.name||settings.name||'未命名项目',id:source.id},page,productDatabase:productRows.map(p=>[p[0],p[3].join('\n'),p[5],p[11]])};
   }
@@ -41,12 +60,12 @@
   }
   async function sync(data) {
     if (!token() || !window.hwApi || !data) return;
-    try { await window.hwApi.request('/api/migrate/local',{method:'POST',body:JSON.stringify({data})}); return true; }
+    try { await serverizeImages(data); await window.hwApi.request('/api/migrate/local',{method:'POST',body:JSON.stringify({data})}); return true; }
     catch (error) { console.warn('[backend-sync]',error.message); return false; }
   }
   async function syncPages() {
     if (!token() || !window.productPageDb || !window.hwApi) return true;
-    try { await window.hwApi.request('/api/product-pages/bulk',{method:'POST',body:JSON.stringify({pages:window.productPageDb})}); return true; }
+    try { await serverizeImages(window.productPageDb); await window.hwApi.request('/api/product-pages/bulk',{method:'POST',body:JSON.stringify({pages:window.productPageDb})}); return true; }
     catch (error) { console.warn('[page-sync]',error.message); return false; }
   }
   async function syncVersion(item) {

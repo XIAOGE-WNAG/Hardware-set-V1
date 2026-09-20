@@ -83,7 +83,13 @@ body[data-step="4"] .document{padding:0}
 #project-hub #project-error{display:none}
 nav#workflow{position:fixed!important;top:calc(var(--hdr-h) + var(--hub-h));left:0;bottom:0;width:var(--rail-w);height:auto;flex-direction:column;align-items:stretch;gap:10px;padding:16px 14px;overflow-y:auto;border-right:1px solid #0b2438;border-bottom:0;border-radius:0;background:linear-gradient(180deg,#10334d 0%,#0b2438 100%);z-index:28}
 nav#workflow button{flex:0 0 auto;width:100%;min-width:0;justify-content:flex-start;text-align:left;padding:13px 14px;border-radius:8px}
-main{margin-left:var(--rail-w);min-height:100vh}
+main{margin-left:var(--rail-w);min-height:100vh;padding:14px 18px}
+main .tools{margin-bottom:6px}
+.viewport{max-height:calc(100vh - 138px)!important}
+.edit-actions+.viewport{max-height:calc(100vh - 210px)!important}
+body:has(#data-editor[open]) .viewport{max-height:calc(100vh - 540px)!important;min-height:200px}
+body[data-step="4"] .viewport{background:#dce0e3}
+.pager{margin-top:10px}
 #notice{left:calc(var(--rail-w) + (100vw - var(--rail-w))/2)}
 @media(max-width:960px){
 .app-header{position:static!important;width:auto;height:auto;flex-direction:row;align-items:center;overflow:visible}

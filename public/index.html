@@ -151,6 +151,8 @@ dialog[open]{left:10px;right:10px;top:10px;bottom:10px}
 .print-page .footer-image-box .product-image-layer{position:static!important;inset:auto!important;transform:none!important}
 .print-page .footer-image-layer-img{position:static!important;width:100%!important;max-width:100%!important;right:auto!important;bottom:auto!important}
 }
+/* 居中基准对齐：滚动条占位常驻，白页与顶部工具条共用同一中心 */
+.viewport{scrollbar-gutter:stable;overflow-y:auto}
 </style>
 </head><body>
 <header class="app-header"><strong>门五金配置</strong><span>钱江世纪城总部大楼 · 2标段</span><button id="print">打印 / 另存 PDF</button></header><nav id="workflow" aria-label="4个功能模块"></nav><main><div class="tools"><h1 id="module-title"></h1><div class="controls"><label id="search-label">查找 <input id="search" type="search" placeholder="门号、位置、产品代码"></label><label id="set-label" hidden>配置组 <select id="set-select"><option>SET-01</option><option>SET-02</option><option>SET-02D</option></select></label><button id="export">导出排版表格</button></div></div><p class="source-note" id="source-note"></p><div id="viewport" class="viewport" tabindex="0" aria-label="表格区域，可横向滚动"><article id="document" class="document"></article></div><footer class="pager"><button id="previous">上一步</button><span id="step-description"></span><button id="next">下一步</button></footer></main><div id="notice" role="status" aria-live="polite"></div><script>

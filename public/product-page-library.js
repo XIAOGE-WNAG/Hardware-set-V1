@@ -12,9 +12,11 @@
   const normalize = page => ({...blank(), ...clone(page), variants:(page.variants || []).map(row=>Array.from({length:4},(_,i)=>String(row[i]??''))), features:(page.features||[]).map(String)});
   function message(text) { root.querySelector('[data-library-status]').textContent=text; }
   function persist(next) {
-    window.saveProductPageDb(next); // Commit storage before changing in-memory data.
-    for(const key of Object.keys(db())) delete db()[key];
-    Object.assign(db(), next);
+    // 在现有引用上原地替换内容（saveProductPageDb 只换引用，不能先换再清空同一份对象，否则数据被删空）
+    const target=db();
+    for(const key of Object.keys(target)) delete target[key];
+    Object.assign(target, next);
+    window.saveProductPageDb(target);
     window.hwBackendBridge?.syncPages().then(ok=>{if(ok)window.hwBackendBridge.clearLegacyData();});
   }
   function download(value, name) {

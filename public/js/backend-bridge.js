@@ -51,7 +51,7 @@
     const totalDoors=doors.reduce((n,r)=>n+(Number(r[8])||0),0);
     const project=Object.assign({},settings,{id:source.id,name:source.name||settings.name||'未命名项目',issued:String(settings.issued??''),technician:String(settings.technician??''),area:String(settings.area??''),total:Number.isFinite(Number(settings.total))?Number(settings.total):totalDoors});
     delete project.page;
-    return {doors,sets,products:productRows,project,page,productDatabase:productRows.map(p=>[p[0],p[3].join('\n'),p[5],p[11]])};
+    return {doors,sets,products:productRows,project,page,productDatabase:productRows.map(p=>[p[0],p[3].join('\n'),p[5],p[11]]),_skuNo:Object.fromEntries(products.filter(p=>p.sku_no).map(p=>[p.sku_code,p.sku_no]))};
   }
   async function hydrateState() {
     if(!token()||!window.hwApi||!window.caseData)return;

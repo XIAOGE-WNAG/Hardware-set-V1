@@ -780,6 +780,12 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   window.saveProductPageDb=saveProductPageDb;
   window.productPageBlank=blank;
   function findLibraryPage(code){
+    // 优先按「建号SKU」(唯一) 匹配：产品代码可对应多个SKU，只有SKU唯一
+    const skuNo=caseData&&caseData._skuNo?caseData._skuNo[code]:'';
+    if(skuNo){
+      if(productPageDb[skuNo])return productPageDb[skuNo];
+      for(const k of Object.keys(productPageDb)){const p=productPageDb[k];if(p&&String(p.skuCode||'').trim()===skuNo)return p;}
+    }
     if(productPageDb[code])return productPageDb[code];
     for(const k of Object.keys(productPageDb)){const p=productPageDb[k];if(p&&String(p.skuCode||'').trim()===code)return p;}
     return null;

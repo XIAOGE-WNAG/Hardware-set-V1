@@ -44,15 +44,17 @@
     const lines=textLines(text), name=(lines.find(line=>line.length>2&&line.length<80)||fileName.replace(/\.(pdf|docx?)$/i,''));
     const variantLines=lines.filter(line=>/[A-Z]{1,6}\d{2,}[A-Z0-9-]*/i.test(line));
     const variants=variantLines.slice(0,20).map(line=>{const parts=line.split(/\s{2,}|\t|,/).map(s=>s.trim()).filter(Boolean);return [parts[0]||line,parts.slice(1,-2).join(' ')||'',parts.at(-2)||'',parts.at(-1)||''];});
-    return normalize({name,brand:'GMT',photo:null,drawing:null,variants,features:lines.slice(0,60),sourceFile:{name:fileName,type:'application/octet-stream'}});
+    const visual=images?.[0]||{};
+    return normalize({name,brand:'GMT',photo:visual.photo||null,drawing:visual.drawing||null,variants,features:lines.slice(0,60),sourceFile:{name:fileName,type:'application/octet-stream'}});
   }
+  function cropCanvas(canvas,x,y,w,h){const crop=document.createElement('canvas');crop.width=Math.max(1,Math.round(w));crop.height=Math.max(1,Math.round(h));crop.getContext('2d').drawImage(canvas,x,y,w,h,0,0,crop.width,crop.height);return crop.toDataURL('image/png');}
   async function parsePdf(file){
     await loadScript('vendor/pdf.min.js',()=>window.pdfjsLib);
     window.pdfjsLib.GlobalWorkerOptions.workerSrc='vendor/pdf.worker.min.js';
     const pdf=await window.pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise,lines=[],images=[];
     for(let n=1;n<=pdf.numPages;n++){
       const page=await pdf.getPage(n),content=await page.getTextContent();lines.push(content.items.map(item=>item.str).join(' '));
-      if(n<=2){const viewport=page.getViewport({scale:1.5}),canvas=document.createElement('canvas');canvas.width=viewport.width;canvas.height=viewport.height;await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;images.push(canvas.toDataURL('image/png'));}
+      if(n===1){const viewport=page.getViewport({scale:1.5}),canvas=document.createElement('canvas');canvas.width=viewport.width;canvas.height=viewport.height;await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;const imageTitle=content.items.find(item=>/产品图片|Product\s*Image/i.test(item.str)),orderTitle=content.items.find(item=>/订货信息|Order/i.test(item.str));if(imageTitle&&orderTitle){const top=Math.max(0,viewport.height-(imageTitle.transform?.[5]||viewport.height/2)*1.5-24),bottom=Math.min(viewport.height,viewport.height-(orderTitle.transform?.[5]||viewport.height/3)*1.5+18),height=Math.max(80,bottom-top);images.push({photo:cropCanvas(canvas,0,top,viewport.width/2,height),drawing:cropCanvas(canvas,viewport.width/2,top,viewport.width/2,height)});} }
     }
     return structuredPage(file.name,lines.join('\n'),images);
   }

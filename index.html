@@ -564,7 +564,7 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
     const base=(caseData.project?.name||'未命名项目').replace(/[\\/:*?"<>|]/g,'').trim()||'未命名项目';
     return `${base}_${ts}`;
   }
-  function versionLimit(){return authGate.user?.role==='trial'?5:200}
+  function versionLimit(){return 200}
   // 每次保存都生成一条独立版本记录，同一项目可保留多个版本，不覆盖
   function archive(versionName){
     allowed();const d=normalize(caseData),rows=read();

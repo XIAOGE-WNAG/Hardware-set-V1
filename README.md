@@ -24,6 +24,6 @@ cp .env.example .env
 
 公开：`GET /api/health`、`POST /api/auth/login`。
 
-鉴权后：`/api/auth/me`、`/api/auth/change-password`、`/api/projects`、`/api/products`、`/api/categories`、`/api/sets`、`/api/doors`、`/api/bom`、`/api/product-pages`、`/api/upload/image`、`/api/import/excel`、`/api/export/xlsx`、`/api/export/xlsx/template`、`/api/migrate/local`。
+鉴权后：`/api/auth/me`、`/api/auth/change-password`、`/api/projects`、`/api/products`、`/api/categories`、`/api/sets`、`/api/doors`、`/api/bom`、`/api/product-pages`、`/api/upload/image`、`/api/upload/document`、`/api/import/excel`、`/api/export/xlsx`、`/api/export/xlsx/template`、`/api/migrate/local`、`/api/state`。
 
 自测：`node verify-library.cjs` 会使用临时 SQLite 数据目录启动隔离服务，验证健康检查、鉴权、CRUD、按樘数加权 BOM、产品单页接口和真实 XLSX 响应。

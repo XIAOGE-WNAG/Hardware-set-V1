@@ -30,6 +30,10 @@
     if(!ready())throw Error('解析组件未正确加载');
   }
   const dataUrl = (value,type='image/png') => `data:${type};base64,${value}`;
+  async function uploadImage(file){
+    if(window.hwApi&&localStorage.getItem('hw_token')){const form=new FormData;form.append('file',file);try{return (await window.hwApi.request('/api/upload/image',{method:'POST',body:form})).data.url;}catch(error){console.warn('[image-upload]',error.message);}}
+    return await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('图片读取失败'));reader.readAsDataURL(file);});
+  }
   function textLines(text){return String(text||'').split(/\r?\n/).map(s=>s.replace(/[ \t]+/g,' ').trim()).filter(Boolean);}
   function structuredPage(fileName,text,images){
     const lines=textLines(text), name=(lines.find(line=>line.length>2&&line.length<80)||fileName.replace(/\.(pdf|docx?)$/i,''));
@@ -167,7 +171,7 @@
       const key=e.target.dataset.image,file=e.target.files?.[0];if(!key||!file)return;
       if(!/^image\/(png|jpeg|webp)$/.test(file.type)||file.size>1024*1024){message('请选择不超过 1MB 的 PNG、JPEG 或 WebP 图片。');return;}
       state.pending++;
-      try{page[key]=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('图片读取失败'));reader.readAsDataURL(file);});state.dirty=true;drawEditor(root.querySelector('[data-field="code"]').value);}catch(error){message(error.message);}finally{state.pending--;}
+      try{page[key]=await uploadImage(file);state.dirty=true;drawEditor(root.querySelector('[data-field="code"]').value);}catch(error){message(error.message);}finally{state.pending--;}
     };
     root.onsubmit=e=>{
       e.preventDefault();if(state.pending){message('图片正在读取，请稍候。');return;}

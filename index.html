@@ -499,12 +499,13 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   function close(){if(busy){$('edit-error').textContent='图片正在读取，请稍候。';return}if(changed&&!confirm('放弃本次未保存的修改？'))return;modal.close();document.body.classList.remove('database-editor-mode');draft=null;}
   const download=(obj,name)=>{const u=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
   $('edit-data').onclick=()=>{if(workbench.step===4){document.querySelector('[data-db-col]')?.focus();workbench.notice('请直接在产品数据库单元格中编辑，使用新增行按钮添加记录。');return}openEditor()};$('cancel-top').onclick=close;$('cancel-edit').onclick=close;modal.addEventListener('cancel',e=>{e.preventDefault();close()});
+  async function serverImage(file){return await new Promise((resolve,reject)=>{const reader=new FileReader;reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)})}
   modal.addEventListener('input',e=>{if(e.target.matches('[data-path]')){changed=true;collect();totals()}});
   modal.addEventListener('change',async e=>{
     if(e.target.id==='record-select'){collect();index=Number(e.target.value);draw();return}
     if(!e.target.dataset.image)return;const input=e.target,file=input.files[0];if(!file)return;
     if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>1024*1024){$('edit-error').textContent='请选择不超过 1MB 的 PNG、JPEG 或 WebP 图片。';input.value='';return}
-    busy++;try{const data=await new Promise((resolve,reject)=>{const reader=new FileReader;reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});await new Promise((resolve,reject)=>{const img=new Image;img.onload=resolve;img.onerror=reject;img.src=data});collect();put(draft,input.dataset.image,data);changed=true;$('edit-error').textContent='';draw()}catch(err){$('edit-error').textContent='无法读取该图片，请换一张。'}finally{busy--}
+    busy++;try{const data=await serverImage(file);await new Promise((resolve,reject)=>{const img=new Image;img.onload=resolve;img.onerror=reject;img.src=data});collect();put(draft,input.dataset.image,data);changed=true;$('edit-error').textContent='';draw()}catch(err){$('edit-error').textContent='无法读取该图片，请换一张。'}finally{busy--}
   });
   modal.addEventListener('click',e=>{
     const b=e.target.closest('button');if(!b)return;const id=b.id;

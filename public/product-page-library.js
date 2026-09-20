@@ -121,7 +121,18 @@
     document.querySelector('[data-database-shortcut]').classList.toggle('active',window.workbench.step===4);
     window.scrollTo(0,state.scroll);return true;
   }
+  function pruneOrphans() {
+    // 清理历史遗留的空壳条目：既无名称、又无上传源文件/图片的空对象（早年按行号 0..N 误建），
+    // 否则下拉里会出现大量无文件名的空选项。
+    const target=db(); if(!target) return;
+    for(const key of Object.keys(target)){
+      const p=target[key]||{};
+      const hasName=String(p.name||'').trim();
+      if(!hasName && !p.sourceFile && !p.photo && !p.drawing && !(p.variants||[]).length && !(p.features||[]).length) delete target[key];
+    }
+  }
   function render(status='') {
+    pruneOrphans();
     const codes=Object.keys(db());
     if(!own(db(),state.selected))state.selected=codes[0]||'';
     state.selectedMany=state.selectedMany.filter(code=>own(db(),code));

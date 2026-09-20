@@ -117,7 +117,11 @@ dialog[open]{left:10px;right:10px;top:10px;bottom:10px}
 }
 @media print{.app-header,#project-hub,nav#workflow{position:static!important;display:none!important}main{margin-left:0!important}}
 </style>
-<style id="a4-master-template">
+<style id="border-authoritative">
+.product-frame{border:1px solid #111!important;box-sizing:border-box!important}
+.product-frame .caption,.product-frame .blue-band,.product-frame .order-table,.product-frame .features{border-left:0!important;border-right:0!important}
+.product-frame .product-visuals>div+div{border-left:1px solid #111!important}
+</style><style id="a4-master-template">
 /* 以合页PDF原版p-01为唯一基准重排HTML可编辑页；仅作用HTML单页，不触碰PDF原页(wb-print-pdf/canvas) */
 .product-sheet{width:794px!important;max-width:794px!important;min-width:0!important;min-height:1123px!important;margin:0 auto!important;padding:18mm 72px 72px!important;box-sizing:border-box;background:#fff;position:relative}
 .product-sheet-content{padding:0!important;display:flex!important;flex-direction:column;min-height:1123px}

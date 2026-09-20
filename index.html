@@ -573,7 +573,7 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
     const vname=(versionName||defaultVersionName()||'未命名版本').trim();
     const item={id:uid(),projectId:d.project.id,projectName:d.project.name||'未命名项目',name:vname,savedAt:new Date().toISOString(),data:snapshot};
     rows.unshift(item);
-    localStorage.setItem(key,JSON.stringify(rows));caseData.project.id=d.project.id;return item;
+    localStorage.setItem(key,JSON.stringify(rows));caseData.project.id=d.project.id;window.hwBackendBridge?.syncVersion(item);return item;
   }
   function activate(data){const d=normalize(data);d.productDatabase=loadDb();const old=window.caseData;try{window.caseData=clone(d);projectStore.save(d)}catch(e){window.caseData=old;throw e}document.getElementById('search').value='';workbench.go(0)}
   function run(fn){try{fn()}catch(e){document.getElementById('project-error').textContent=e.message;workbench.notice(e.message)}}

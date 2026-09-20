@@ -46,6 +46,10 @@
     try { await window.hwApi.request('/api/product-pages/bulk',{method:'POST',body:JSON.stringify({pages:window.productPageDb})}); }
     catch (error) { console.warn('[page-sync]',error.message); }
   }
+  async function syncVersion(item) {
+    if(!token()||!window.hwApi||!item?.data)return;
+    try{const projects=(await window.hwApi.request('/api/projects')).data||[],project=projects.find(p=>p.name===item.projectName);if(project)await window.hwApi.request('/api/projects/'+project.id+'/versions',{method:'POST',body:JSON.stringify({name:item.name,snapshot:item.data})});}catch(error){console.warn('[version-sync]',error.message);}
+  }
   function schedule() {
     clearTimeout(timer); timer=setTimeout(async () => { await sync(window.caseData); await syncPages(); await hydratePages(); await hydrateState(); await hydrateProductDatabase(); },500);
   }
@@ -58,5 +62,5 @@
   window.addEventListener('hw-auth-login',schedule);
   window.addEventListener('viewrender',schedule);
   const poll=setInterval(() => { attach(); if(wrapped) clearInterval(poll); },100);
-  window.hwBackendBridge={sync,syncPages};
+  window.hwBackendBridge={sync,syncPages,syncVersion};
 })();

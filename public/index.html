@@ -71,6 +71,34 @@ body[data-step="4"] .document{padding:0}
 <link rel="stylesheet" href="product-page-library.css?v=2">
 <script defer src="product-page-library.js?v=2"></script>
 <script src="/js/api.js"></script><script src="/js/backend-bridge.js"></script>
+<style id="left-rail-ui">
+:root{--rail-w:238px;--hdr-h:172px;--hub-h:266px}
+.app-header{position:fixed!important;top:0;left:0;width:var(--rail-w);height:var(--hdr-h);flex-direction:column;align-items:stretch;justify-content:flex-start;gap:9px;padding:16px 16px 12px;margin:0;text-align:left;border-right:1px solid #0b2438;border-bottom:1px solid #0b2438;border-radius:0;z-index:30;overflow:hidden}
+.app-header strong{font-size:18px;letter-spacing:.06em}
+.app-header span{display:block;font-size:12px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-header button{margin-left:0;width:100%;flex:0 0 auto}
+#project-hub{position:fixed!important;top:var(--hdr-h);left:0;width:var(--rail-w);height:var(--hub-h);flex-direction:column;align-items:stretch;gap:8px;padding:14px 14px;margin:0;border-right:1px solid #0b2438;border-bottom:1px solid #0b2438;border-radius:0;overflow-y:auto;z-index:29}
+#project-hub::before{width:100%;margin:0 0 2px;font-size:13px;letter-spacing:.14em}
+#project-hub button{width:100%;flex:0 0 auto;text-align:center;padding:8px 10px}
+#project-hub #project-error{display:none}
+nav#workflow{position:fixed!important;top:calc(var(--hdr-h) + var(--hub-h));left:0;bottom:0;width:var(--rail-w);height:auto;flex-direction:column;align-items:stretch;gap:10px;padding:16px 14px;overflow-y:auto;border-right:1px solid #0b2438;border-bottom:0;border-radius:0;background:linear-gradient(180deg,#10334d 0%,#0b2438 100%);z-index:28}
+nav#workflow button{flex:0 0 auto;width:100%;min-width:0;justify-content:flex-start;text-align:left;padding:13px 14px;border-radius:8px}
+main{margin-left:var(--rail-w);min-height:100vh}
+#notice{left:calc(var(--rail-w) + (100vw - var(--rail-w))/2)}
+@media(max-width:960px){
+.app-header{position:static!important;width:auto;height:auto;flex-direction:row;align-items:center;overflow:visible}
+.app-header span{display:none}
+.app-header button{width:auto;margin-left:auto;flex:0 0 auto}
+#project-hub{position:static!important;width:auto;height:auto;flex-direction:row;flex-wrap:wrap;overflow:visible}
+#project-hub::before{width:100%}
+#project-hub button{width:auto;flex:1 1 30%}
+nav#workflow{position:static!important;width:auto;top:auto;bottom:auto;flex-direction:row;overflow-x:auto}
+nav#workflow button{justify-content:center;text-align:center;flex:1 1 auto}
+main{margin-left:0;min-height:0}
+#notice{left:50%}
+}
+@media print{.app-header,#project-hub,nav#workflow{position:static!important;display:none!important}main{margin-left:0!important}}
+</style>
 </head><body>
 <header class="app-header"><strong>门五金配置</strong><span>钱江世纪城总部大楼 · 2标段</span><button id="print">打印 / 另存 PDF</button></header><nav id="workflow" aria-label="4个功能模块"></nav><main><div class="tools"><h1 id="module-title"></h1><div class="controls"><label id="search-label">查找 <input id="search" type="search" placeholder="门号、位置、产品代码"></label><label id="set-label" hidden>配置组 <select id="set-select"><option>SET-01</option><option>SET-02</option><option>SET-02D</option></select></label><button id="export">导出排版表格</button></div></div><p class="source-note" id="source-note"></p><div id="viewport" class="viewport" tabindex="0" aria-label="表格区域，可横向滚动"><article id="document" class="document"></article></div><footer class="pager"><button id="previous">上一步</button><span id="step-description"></span><button id="next">下一步</button></footer></main><div id="notice" role="status" aria-live="polite"></div><script>
 /* ===== data.js ===== */

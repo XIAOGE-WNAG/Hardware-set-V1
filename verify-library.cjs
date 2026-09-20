@@ -28,6 +28,7 @@ async function main(){
   assert.equal((await request('/api/product-pages',{method:'POST',headers:auth,body:JSON.stringify({skuCode:'VERIFY-1',page:{name:'验证单页',variants:[['VERIFY-1','','','']]}})})).status,201);
   assert.equal((await request('/api/product-pages/VERIFY-1',{headers:auth})).body.data.page.name,'验证单页');
   assert.equal((await request('/api/product-pages/bulk',{method:'POST',headers:auth,body:JSON.stringify({pages:{'VERIFY-2':{name:'批量单页'}}})})).body.data.count,1);
+  const documentForm=new FormData();documentForm.append('file',new Blob([Buffer.from('%PDF-1.4 verify')],{type:'application/pdf'}),'verify.pdf');const uploaded=await fetch(base+'/api/upload/document',{method:'POST',headers:{Authorization:`Bearer ${token}`},body:documentForm});assert.equal(uploaded.status,201);const uploadedBody=await uploaded.json();fs.rmSync(path.join(__dirname,'public',uploadedBody.data.url.replace(/^\//,'')),{force:true});
   const xlsx=await fetch(base+`/api/export/xlsx?projectId=${projectId}`,{headers:auth});assert.equal(xlsx.status,200);assert.equal(xlsx.headers.get('content-type'),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   console.log('PASS health/auth/CRUD/BOM/xlsx');
 }

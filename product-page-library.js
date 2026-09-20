@@ -34,6 +34,10 @@
     if(window.hwApi&&localStorage.getItem('hw_token')){const form=new FormData;form.append('file',file);try{return (await window.hwApi.request('/api/upload/image',{method:'POST',body:form})).data.url;}catch(error){console.warn('[image-upload]',error.message);}}
     return await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('图片读取失败'));reader.readAsDataURL(file);});
   }
+  async function uploadDocument(file){
+    if(window.hwApi&&localStorage.getItem('hw_token')){const form=new FormData;form.append('file',file);try{const result=(await window.hwApi.request('/api/upload/document',{method:'POST',body:form})).data;return {...result,data:null};}catch(error){console.warn('[document-upload]',error.message);}}
+    return {name:file.name,type:file.type||'application/octet-stream',data:await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);})};
+  }
   function textLines(text){return String(text||'').split(/\r?\n/).map(s=>s.replace(/[ \t]+/g,' ').trim()).filter(Boolean);}
   function structuredPage(fileName,text,images){
     const lines=textLines(text), name=(lines.find(line=>line.length>2&&line.length<80)||fileName.replace(/\.(pdf|docx?)$/i,''));
@@ -58,13 +62,14 @@
   function sourceHtml(page){
     if(!page?.sourceFile)return '';
     const file=page.sourceFile,isPdf=/^application\/pdf$|\.pdf$/i.test(file.type||file.name);
-    return isPdf&&file.data?`<div class="pdf-source-pages" data-pdf-source><p>正在按原始 PDF 版式加载产品单页……</p></div>`:window.productPageHtml(state.selected,false,page);
+    return isPdf&&(file.data||file.url)?`<div class="pdf-source-pages" data-pdf-source><p>正在按原始 PDF 版式加载产品单页……</p></div>`:window.productPageHtml(state.selected,false,page);
   }
   async function renderPdfSource(){
-    const page=db()[state.selected],file=page?.sourceFile;if(!file||!/^application\/pdf$|\.pdf$/i.test(file.type||file.name)||!file.data)return;
+    const page=db()[state.selected],file=page?.sourceFile;if(!file||!/^application\/pdf$|\.pdf$/i.test(file.type||file.name)||!(file.data||file.url))return;
     try{
       await loadScript('vendor/pdf.min.js',()=>window.pdfjsLib);window.pdfjsLib.GlobalWorkerOptions.workerSrc='vendor/pdf.worker.min.js';
-      const pdf=await window.pdfjsLib.getDocument({data:Uint8Array.from(atob(file.data.split(',')[1]),c=>c.charCodeAt(0))}).promise,host=root.querySelector('[data-pdf-source]');if(!host)return;host.innerHTML='';
+      const bytes=file.data?Uint8Array.from(atob(file.data.split(',')[1]),c=>c.charCodeAt(0)):new Uint8Array(await (await fetch(file.url)).arrayBuffer());
+      const pdf=await window.pdfjsLib.getDocument({data:bytes}).promise,host=root.querySelector('[data-pdf-source]');if(!host)return;host.innerHTML='';
       for(let n=1;n<=pdf.numPages;n++){const pdfPage=await pdf.getPage(n),viewport=pdfPage.getViewport({scale:1.35}),canvas=document.createElement('canvas');canvas.className='pdf-source-page';canvas.width=viewport.width;canvas.height=viewport.height;host.appendChild(canvas);await pdfPage.render({canvasContext:canvas.getContext('2d'),viewport}).promise;}
     }catch(error){const host=root.querySelector('[data-pdf-source]');if(host)host.innerHTML=`<p class="pdf-error">原始 PDF 加载失败：${esc(error.message)}</p>`;}
   }
@@ -193,8 +198,7 @@
         if(/\.pdf$/i.test(file.name))imported[key]=await parsePdf(file);
         else if(/\.docx$/i.test(file.name))imported[key]=await parseDocx(file);
         else throw Error(file.name+'：旧版 DOC 无法在浏览器中直接解析，请转换为 DOCX 后导入');
-        const rawData=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('原始文件读取失败'));reader.readAsDataURL(file);});
-        imported[key].sourceFile={name:file.name,type:file.type||'application/octet-stream',data:rawData};
+        imported[key].sourceFile=await uploadDocument(file);
       }
       const count=Object.keys(imported).filter(code=>own(db(),code)).length;
       if(count&&!confirm(`有 ${count} 个同型号单页，是否替换？`))return;

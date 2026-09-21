@@ -49,7 +49,7 @@ function userFromToken(token) {
   try { db.prepare("UPDATE sessions SET last_active_at=? WHERE id=? AND datetime(last_active_at,'+60 seconds') < ?").run(now(), row.sid, now()); } catch {}
   return {
     id: row.id, username: row.username, display_name: row.display_name,
-    role: row.role, must_change_password: row.must_change_password,
+    role: row.role, organization_id: row.organization_id || 'default', must_change_password: row.must_change_password,
     sessionId: row.sid, sessionExpiresAt: row.sexp,
   };
 }

@@ -32,7 +32,7 @@ app.post('/api/auth/login', (req, res) => {
   if (!user) { audit(null, username, 'login_fail', req, '用户不存在'); return bad(); }
   // checks
   if (user.status === 'locked') { audit(user.id, user.username, 'login_locked', req, '账号已锁定'); return res.status(403).json({ok:false,error:'账号已锁定，请联系管理员'}); }
-  if (user.status === 'disabled') { audit(user.id, user.username, 'login_disabled', req, '账号已禁用'); return res.status(403).json({ok:false,error:'账号已禁用'}); }
+  if (user.status !== 'active') { audit(user.id, user.username, 'login_disabled', req, '账号已禁用'); return res.status(403).json({ok:false,error:'账号已禁用'}); }
   if (user.expires_at && user.expires_at < now()) { audit(user.id, user.username, 'login_expired', req, '账号已过期'); return res.status(403).json({ok:false,error:'账号已过期，请联系管理员'}); }
   if (user.locked_until && user.locked_until > now()) { audit(user.id, user.username, 'login_temp_locked', req, '临时锁定中'); return res.status(429).json({ok:false,error:'失败次数过多，请15分钟后再试'}); }
   if (!verifyPassword(String(password||''), user)) {
@@ -44,7 +44,8 @@ app.post('/api/auth/login', (req, res) => {
     return bad();
   }
   // success
-  const hours = user.role === 'admin' ? 2 : (remember ? 168 : 8);
+  const configuredHours = Math.max(1, Number(user.session_hours) || 168);
+  const hours = remember ? Math.max(configuredHours, 168) : configuredHours;
   const token = newToken();
   const sess = createSession(user, token, req, hours);
   db.prepare('UPDATE users SET failed_login_count=0, locked_until=NULL, last_login_at=? WHERE id=?').run(now(), user.id);
@@ -68,7 +69,8 @@ app.post('/api/auth/logout-all', requireAuth, (req, res) => {
 });
 
 app.post('/api/auth/refresh', requireAuth, (req, res) => {
-  const hours = req.user.role === 'admin' ? 2 : 8;
+  const user = db.prepare('SELECT session_hours FROM users WHERE id=?').get(req.user.id);
+  const hours = Math.max(1, Number(user?.session_hours) || 168);
   const token = newToken();
   const sess = createSession(req.user, token, req, hours);
   db.prepare('UPDATE sessions SET revoked_at=? WHERE id=?').run(now(), req.user.sessionId);

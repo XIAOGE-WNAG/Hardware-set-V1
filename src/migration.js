@@ -4,13 +4,13 @@ const { now } = require('./auth');
 const json = value => JSON.stringify(value === undefined ? {} : value);
 const one = (sql, params=[]) => db.prepare(sql).get(...params);
 
-function migrateLocal(data={}) {
+function migrateLocal(data={}, userId=1) {
   const t=now(), project=data.project||{};
-  let projectId=project.id && one('SELECT id FROM projects WHERE id=?',[project.id])?.id;
-  if(!projectId&&project.name) projectId=one('SELECT id FROM projects WHERE name=? AND plan_code=? ORDER BY id LIMIT 1',[project.name,project.planCode||''])?.id;
+  let projectId=project.id && one('SELECT id FROM projects WHERE id=? AND user_id=?',[project.id,userId])?.id;
+  if(!projectId&&project.name) projectId=one('SELECT id FROM projects WHERE user_id=? AND name=? AND plan_code=? ORDER BY id LIMIT 1',[userId,project.name,project.planCode||''])?.id;
   const settings={...project}; if(data.page) settings.page=data.page;
   if(projectId) db.prepare('UPDATE projects SET name=?,plan_code=?,settings=?,updated_at=? WHERE id=?').run(project.name||'迁移项目',project.planCode||'',json(settings),t,projectId);
-  else projectId=Number(db.prepare('INSERT INTO projects(name,plan_code,settings,created_at,updated_at) VALUES(?,?,?,?,?)').run(project.name||'迁移项目',project.planCode||'',json(settings),t,t).lastInsertRowid);
+  else projectId=Number(db.prepare('INSERT INTO projects(user_id,name,plan_code,settings,created_at,updated_at) VALUES(?,?,?,?,?,?)').run(userId,project.name||'迁移项目',project.planCode||'',json(settings),t,t).lastInsertRowid);
   const products=new Map(), sets=new Map();
   const productRows=[...(data.products||[])];
   for(const row of data.productDatabase||[]) if(Array.isArray(row)) productRows.push({skuCode:row[0],name:row[1]||row[0],model:row[0],specs:{description:row[1]||''},unit:row[2]||'',brand:row[3]||''});

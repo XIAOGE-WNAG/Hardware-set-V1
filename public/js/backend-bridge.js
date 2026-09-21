@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const token = () => localStorage.getItem('hw_token');
+  const token = () => sessionStorage.getItem('hw_token');
   let timer = 0, wrapped = false, pendingData = null;
   const businessKey = key => /^(door-hardware-project-|door-hardware-product-database|door-hardware-product-page-database|door-hardware-auth-session|door-hardware-project-history)/.test(key);
   const hasLegacyData = () => { for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&businessKey(key))return true;} return false; };
@@ -35,9 +35,13 @@
   async function hydrateProductDatabase() {
     if (!token() || !window.hwApi || !window.caseData || (window.caseData.productDatabase||[]).length) return;
     try {
-      const result=await window.hwApi.request('/api/products');
-      const rows=(result.data||[]).map(p=>[p.sku_code,p.specs?.description||p.name||'',p.unit||'',p.brand||'']);
-      if(rows.length){window.caseData.productDatabase=rows;window.dispatchEvent(new Event('backend-product-database-hydrated'));window.workbench?.render?.();}
+      // 产品数据库已独立存储在 product_db；不要再从产品主表回填，
+      // 否则用户清空数据库后，登录/刷新会把旧演示数据重新加载回来。
+      const result=await window.hwApi.request('/api/product-db');
+      const rows=Array.isArray(result?.data?.rows)?result.data.rows:[];
+      window.caseData.productDatabase=rows;
+      window.dispatchEvent(new Event('backend-product-database-hydrated'));
+      window.workbench?.render?.();
     } catch (error) { console.warn('[product-db-hydrate]',error.message); }
   }
   function stateToCase(state) {

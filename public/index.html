@@ -29,9 +29,9 @@ html,body,body *,button,input,select,textarea{font-family:SimSun,"宋体",serif!
 
 #project-hub{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:linear-gradient(110deg,#102a43 0%,#1f5f86 55%,#2284a9 100%);padding:14px 24px;border-bottom:1px solid #0b2438;box-shadow:0 3px 12px #102a4333}
 #project-hub+main{padding-top:20px}
-.app-header{background:linear-gradient(120deg,#082338,#124f71 70%,#168ca8);color:#fff;border-bottom:0;box-shadow:0 2px 12px #071b2b55}
+.app-header{background:#dfe3e6;color:#17252b;border-bottom:1px solid #c9ced3;box-shadow:0 2px 12px #6b747c33}
 .app-header strong{letter-spacing:.08em;text-shadow:0 2px 4px #00131f88}
-.app-header span{color:#d7edf4}
+.app-header span{color:#52636a}
 .app-header #print,.app-header>button:last-child{background:#ffd95a;border-color:#ffe99b;color:#2d2600;font-weight:700}
 nav{display:flex;gap:12px;padding:14px 20px;background:linear-gradient(180deg,#f8fcfd,#e9f3f7);border-bottom:1px solid #c6dde7;box-shadow:0 3px 10px rgba(16,74,102,.08);overflow-x:auto}
 nav button{position:relative;flex:1;min-width:152px;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 14px;border:1px solid #d4e5ec;border-bottom:1px solid #d4e5ec;border-radius:10px;background:#ffffff;color:#5d7886;font-size:15px;font-weight:600;letter-spacing:.02em;white-space:nowrap;box-shadow:0 1px 3px rgba(16,74,102,.06);transition:transform .18s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease,color .18s ease}
@@ -77,11 +77,11 @@ body[data-step="4"] .document{padding:0}
 .app-header strong{font-size:17px;letter-spacing:.06em;line-height:1.2}
 .app-header span{display:block;font-size:11px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .app-header button{margin-left:0;width:100%;flex:0 0 auto;padding:8px 10px;font-size:13px}
-#project-hub{position:fixed!important;top:var(--hdr-h);left:0;width:var(--rail-w);height:var(--hub-h);flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch;gap:7px;padding:12px 14px;margin:0;border-right:1px solid #0b2438;border-bottom:1px solid #0b2438;border-radius:0;overflow-x:hidden;overflow:hidden;z-index:29;box-sizing:border-box}
-#project-hub::before{width:100%;margin:0 0 2px;font-size:12px;letter-spacing:.14em;font-weight:700;color:#10334d}
+#project-hub{position:fixed!important;top:var(--hdr-h);left:0;width:var(--rail-w);height:var(--hub-h);flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch;gap:7px;padding:12px 14px;margin:0;border-right:1px solid #c9ced3;border-bottom:1px solid #c9ced3;border-radius:0;overflow-x:hidden;overflow:hidden;background:#e5e7eb;z-index:29;box-sizing:border-box}
+#project-hub::before{width:100%;margin:0 0 2px;font-size:12px;letter-spacing:.14em;font-weight:700;color:#39464d}
 #project-hub button{width:100%;flex:0 0 auto;text-align:center;padding:8px 10px;font-size:13px;box-sizing:border-box}
 #project-hub #project-error{display:none}
-nav#workflow{position:fixed!important;top:calc(var(--hdr-h) + var(--hub-h));left:0;bottom:0;width:var(--rail-w);height:auto;flex-direction:column;align-items:stretch;gap:8px;padding:14px;overflow-y:auto;border-right:1px solid #0b2438;border-bottom:0;border-radius:0;background:linear-gradient(180deg,#10334d 0%,#0b2438 100%);z-index:28;box-sizing:border-box}
+nav#workflow{position:fixed!important;top:calc(var(--hdr-h) + var(--hub-h));left:0;bottom:0;width:var(--rail-w);height:auto;flex-direction:column;align-items:stretch;gap:8px;padding:14px;overflow-y:auto;border-right:1px solid #c9ced3;border-bottom:0;border-radius:0;background:#e5e7eb;z-index:28;box-sizing:border-box}
 nav#workflow button{flex:0 0 auto;width:100%;min-width:0;justify-content:flex-start;text-align:left;padding:12px 14px;border-radius:8px;font-size:14px;box-sizing:border-box}
 main{margin-left:var(--rail-w);min-height:100vh;padding:14px 18px}
 main .tools{margin-bottom:6px}
@@ -759,33 +759,12 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     bar.querySelector('[data-product-page-database]').onclick=()=>run(()=>{allowed();window.productPageLibrary.open()});
     bar.querySelector('[data-user-mgmt]').onclick=()=>openUserMgmt();
     dialog.onclick=e=>run(()=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.remoteRestore){const item=window.remoteHistory?.versions?.find(v=>String(v.id)===b.dataset.remoteRestore);if(!item)throw Error('服务器历史版本不存在');if(caseData.doors.length||caseData.sets.length||caseData.products.length)archive(defaultVersionName());activate(item.snapshot);dialog.close();workbench.notice('服务器版本「'+item.name+'」已打开。');return;}if(b.dataset.remoteDelete){const item=window.remoteHistory?.versions?.find(v=>String(v.id)===b.dataset.remoteDelete),project=window.remoteHistory?.project;if(!item||!project)throw Error('服务器历史版本不存在');if(confirm('确定删除服务器历史版本「'+item.name+'」吗？'))window.hwApi.request('/api/projects/'+project.id+'/versions/'+item.id,{method:'DELETE'}).then(history);return;}if(b.hasAttribute('data-close-history'))dialog.close();if(b.dataset.restore){allowed();const item=read().find(r=>r.id===b.dataset.restore);if(!item)throw Error('历史版本不存在');if(caseData.doors.length||caseData.sets.length)archive(defaultVersionName());activate(item.data);dialog.close();workbench.notice('版本「'+item.name+'」已打开。')}if(b.dataset.delete){show('<h2>历史版本已迁移到服务器</h2><p>请选择服务器历史记录后删除。本地旧缓存不再写回浏览器。</p><button data-close-history>关闭</button>')}});
-    function openUserMgmt(){const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const mask=document.createElement('div');mask.className='auth-mask';mask.style.cssText='z-index:9999;position:fixed;inset:0;background:rgba(10,25,40,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;';
-    mask.innerHTML='<div style="background:#fff;border-radius:14px;width:720px;max-width:94vw;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden">'+
-'<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:linear-gradient(135deg,#10334d,#0b2438);color:#fff">'+
-'<div><h2 style="margin:0;font-size:18px">用户管理</h2><div style="font-size:12px;opacity:.7;margin-top:3px">多用户权限与账户有效期</div></div>'+
-'<button id="um-close" style="background:rgba(255,255,255,.15);border:0;color:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px">×</button></div>'+
-'<div style="flex:1;overflow:auto;padding:20px 24px">'+
-'<div id="um-list"></div>'+
-'<hr style="border:0;border-top:1px solid #e0e4e8;margin:20px 0">'+
-'<h3 style="margin:0 0 14px;font-size:15px;color:#10334d">新建用户</h3>'+
-'<form id="um-form" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
-'<label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:#444">用户名<input name="username" required style="padding:8px 10px;border:1px solid #cdd3d8;border-radius:6px;font-size:14px"></label>'+
-'<label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:#444">显示名<input name="displayName" style="padding:8px 10px;border:1px solid #cdd3d8;border-radius:6px;font-size:14px"></label>'+
-'<label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:#444">密码<input name="password" type="password" minlength="6" required style="padding:8px 10px;border:1px solid #cdd3d8;border-radius:6px;font-size:14px"></label>'+
-'<label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:#444">角色<select name="role" style="padding:8px 10px;border:1px solid #cdd3d8;border-radius:6px;font-size:14px"><option value="viewer">只读</option><option value="editor">编辑</option><option value="admin">管理员</option></select></label>'+
-'<label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:#444">账户有效期(天，0=永久)<input name="accountDays" type="number" value="365" min="0" style="padding:8px 10px;border:1px solid #cdd3d8;border-radius:6px;font-size:14px"></label>'+
-'<div style="grid-column:1/-1"><p class="auth-error" style="color:#c0392b;font-size:13px;margin:4px 0"></p><div style="display:flex;gap:10px;margin-top:6px"><button type="submit" style="flex:1;padding:10px;background:#10334d;color:#fff;border:0;border-radius:6px;cursor:pointer;font-size:14px">创建用户</button><button type="button" id="um-done" style="padding:10px 20px;background:#eef2f5;border:1px solid #cdd3d8;border-radius:6px;cursor:pointer;font-size:14px">完成并关闭</button></div></div>'+
-'</form></div></div>';
-    document.body.append(mask);
-    const close=()=>mask.remove();
-    mask.querySelector('#um-close').onclick=close;
-    mask.querySelector('#um-done').onclick=close;
-    mask.onclick=e=>{if(e.target===mask)close()};
-    async function refresh(){const r=await window.hwApi.request('/api/users');const list=document.getElementById('um-list');list.innerHTML='<table style="width:100%;border-collapse:separate;border-spacing:0;font-size:13px;border:1px solid #e0e4e8;border-radius:8px;overflow:hidden"><thead><tr style="background:#f4f7fa"><th style="padding:8px 10px;text-align:left">ID</th><th style="padding:8px 10px;text-align:left">用户名</th><th style="padding:8px 10px;text-align:left">显示名</th><th style="padding:8px 10px;text-align:left">角色</th><th style="padding:8px 10px;text-align:left">状态</th><th style="padding:8px 10px;text-align:left">有效期(天)</th><th style="padding:8px 10px;text-align:left">操作</th></tr>'+r.data.map(u=>'<tr data-uid="'+u.id+'" style="border-top:1px solid #eef0f2"><td style="padding:8px 10px">'+u.id+'</td><td style="padding:8px 10px;font-weight:600">'+esc(u.username)+'</td><td style="padding:8px 10px"><input value="'+esc(u.displayName)+'" data-f="displayName" style="width:100%;padding:5px 8px;border:1px solid #dde2e6;border-radius:4px;font-size:13px"></td><td style="padding:8px 10px"><select data-f="role" style="padding:5px;border:1px solid #dde2e6;border-radius:4px;font-size:13px"><option value="viewer"'+(u.role==='viewer'?' selected':'')+'>只读</option><option value="editor"'+(u.role==='editor'?' selected':'')+'>编辑</option><option value="admin"'+(u.role==='admin'?' selected':'')+'>管理员</option></select></td><td style="padding:8px 10px"><select data-f="isActive" style="padding:5px;border:1px solid #dde2e6;border-radius:4px;font-size:13px"><option value="1"'+(u.isActive?' selected':'')+'>启用</option><option value="0"'+(!u.isActive?' selected':'')+'>禁用</option></select></td><td style="padding:8px 10px"><input type="number" value="'+(u.accountDays||0)+'" data-f="accountDays" style="width:70px;padding:5px;border:1px solid #dde2e6;border-radius:4px;font-size:13px" title="0=永久"></td><td style="padding:8px 10px;white-space:nowrap"><button data-act="save" style="padding:5px 10px;background:#10334d;color:#fff;border:0;border-radius:4px;cursor:pointer;font-size:12px;margin-right:4px">保存</button><button data-act="del" style="padding:5px 10px;background:#c0392b;color:#fff;border:0;border-radius:4px;cursor:pointer;font-size:12px;margin-right:4px">删除</button><button data-act="reset" style="padding:5px 10px;background:#f0ad4e;color:#fff;border:0;border-radius:4px;cursor:pointer;font-size:12px">重置密码</button></td></tr>').join('')+'</table>';}
-    refresh();
-    mask.querySelector('#um-form').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);const err=mask.querySelector('.auth-error');try{await window.hwApi.request('/api/users',{method:'POST',body:{username:f.get('username'),displayName:f.get('displayName'),password:f.get('password'),role:f.get('role'),accountDays:Number(f.get('accountDays')||0)}});e.target.reset();refresh();err.textContent='✓ 用户创建成功';err.style.color='#27ae60';setTimeout(()=>{err.textContent=''},2000);}catch(ex){err.textContent=ex.message;err.style.color='#c0392b'}};
-    mask.querySelector('#um-list').onclick=async e=>{const btn=e.target.closest('button');if(!btn)return;const tr=btn.closest('tr');const uid=tr.dataset.uid;const body={displayName:tr.querySelector('[data-f=displayName]').value,role:tr.querySelector('[data-f=role]').value,isActive:tr.querySelector('[data-f=isActive]').value==='1',accountDays:Number(tr.querySelector('[data-f=accountDays]').value||0)};try{if(btn.dataset.act==='save'){await window.hwApi.request('/api/users/'+uid,{method:'PUT',body});refresh();}else if(btn.dataset.act==='del'){if(confirm('确定删除该用户？')){await window.hwApi.request('/api/users/'+uid,{method:'DELETE'});refresh();}}else if(btn.dataset.act==='reset'){const p=prompt('输入新密码（至少6位）');if(p&&p.length>=6){await window.hwApi.request('/api/users/'+uid,{method:'PUT',body:{password:p}});alert('已重置');}}}catch(ex){alert(ex.message)}}};
+    function openUserMgmt(){
+      if(window.openAccountTree)return window.openAccountTree();
+      const script=document.createElement('script');script.src='/js/user-management.js';
+      script.onload=()=>window.openAccountTree();script.onerror=()=>alert('账户管理加载失败，请重试');
+      document.head.append(script);
+    }
   }
   window.projectManager={saveHistory:()=>run(save),newProject:()=>run(fresh),openHistory:()=>run(history)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();

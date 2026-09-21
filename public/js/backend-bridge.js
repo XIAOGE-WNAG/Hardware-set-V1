@@ -37,8 +37,9 @@
       for(const key of Object.keys(window.productPageDb))delete window.productPageDb[key];
       Object.assign(window.productPageDb,pages);
       window.saveProductPageDb(window.productPageDb);
+      window.__productPagesServerReady=true;
       window.dispatchEvent(new Event('product-pages-hydrated'));
-    } catch (error) { console.warn('[page-hydrate]',error.message); }
+    } catch (error) { console.warn('[page-hydrate]',error.message);window.__productPagesServerReady=true;window.dispatchEvent(new Event('product-pages-load-failed')); }
   }
   async function hydrateProductDatabase() {
     if (!token() || !window.hwApi || !window.caseData || (window.caseData.productDatabase||[]).length) return;

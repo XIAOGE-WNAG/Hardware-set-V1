@@ -4,7 +4,7 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const clone = value => structuredClone(value);
   const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
-  const state = { active:false, selected:'', selectedMany:[], draft:null, original:'', dirty:false, pending:0, hidden:[], scroll:0 };
+  const state = { active:false, selected:'', selectedMany:[], draft:null, original:'', dirty:false, pending:0, hidden:[], scroll:0, serverReady:!!window.__productPagesServerReady };
   let root;
   const db = () => window.productPageDb;
   const blank = () => window.productPageBlank();
@@ -161,7 +161,7 @@
     state.active=true;root.hidden=false;document.body.classList.add('page-library-active');
     document.querySelector('[data-product-page-database]').classList.add('active');
     document.querySelector('[data-database-shortcut]').classList.remove('active');
-    render();window.scrollTo(0,0);
+    render(state.serverReady?'':'正在同步服务器产品单页数据，请稍候……');window.scrollTo(0,0);
   }
   function close() {
     if(!leave())return false;
@@ -192,6 +192,11 @@
     if(changed){ try{ const copy={...target}; window.saveProductPageDb(copy); window.hwBackendBridge?.syncPages(); }catch(e){} }
   }
   function render(status='') {
+    if(!state.serverReady){
+      root.innerHTML='<div class="tools"><h1>产品单页数据库</h1><button data-action="back">返回项目</button></div><p class="source-note">正在同步当前账户的服务器产品单页数据，请稍候……</p><div class="empty"><p>服务器数据加载完成后显示产品单页。</p></div>';
+      root.querySelector('[data-action="back"]').onclick=close;
+      return;
+    }
     pruneOrphans();
     const codes=Object.keys(db());
     if(!own(db(),state.selected))state.selected=codes[0]||'';
@@ -220,6 +225,8 @@
     root.oninput=null;root.onchange=null;root.onsubmit=null;
     if(codes.length&&db()[state.selected].sourceFile)void renderPdfSource();
   }
+  window.addEventListener('product-pages-hydrated',()=>{state.serverReady=true;if(state.active)render();});
+  window.addEventListener('product-pages-load-failed',()=>{state.serverReady=true;if(state.active)render('服务器暂时不可用，当前显示本地缓存。');});
   const field=(label,key,value,area=false)=>`<label>${esc(label)}${area?`<textarea data-field="${key}">${esc(value)}</textarea>`:`<input data-field="${key}" value="${esc(value)}">`}</label>`;
   function edit(isNew) {
     state.original=isNew?'':state.selected;

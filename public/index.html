@@ -675,7 +675,7 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   // 产品数据库为跨项目共享的全局物料库，独立存储，新建/切换项目均不清空
   const dbKey='door-hardware-product-database-v1';
   const loadDb=()=>{try{const d=JSON.parse(localStorage.getItem(dbKey)||'[]');return Array.isArray(d)?d:[]}catch(e){return[]}};
-  const saveDb=rows=>{caseData.productDatabase=Array.isArray(rows)?structuredClone(rows):[]};
+  const saveDb=rows=>{const arr=Array.isArray(rows)?structuredClone(rows):[];caseData.productDatabase=arr;try{localStorage.setItem(dbKey,JSON.stringify(arr));}catch(e){}};
   window.productDatabaseStore={load:loadDb,save:saveDb};
   const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const read=()=>{const rows=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(rows))throw Error('历史项目数据格式错误');return rows};

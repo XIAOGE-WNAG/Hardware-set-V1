@@ -24,12 +24,20 @@
     }
     return value;
   }
+  const productPageCacheKey='door-hardware-product-page-database-v1';
+  function clearLocalPageCache(){
+    try{localStorage.removeItem(productPageCacheKey)}catch(e){}
+    if(window.productPageDb){for(const key of Object.keys(window.productPageDb))delete window.productPageDb[key];}
+  }
   async function hydratePages() {
-    if (!token() || !window.hwApi || !window.productPageDb || Object.keys(window.productPageDb).length) return;
+    if (!token() || !window.hwApi || !window.productPageDb) return;
     try {
       const result=await window.hwApi.request('/api/product-pages');
       const pages=Object.fromEntries((result.data||[]).map(row=>[row.sku_code,{...row.page,sourceFile:row.sourceFile||row.page?.sourceFile||null}]));
-      if(Object.keys(pages).length){Object.assign(window.productPageDb,pages);window.saveProductPageDb(window.productPageDb);window.dispatchEvent(new Event('product-pages-hydrated'));}
+      for(const key of Object.keys(window.productPageDb))delete window.productPageDb[key];
+      Object.assign(window.productPageDb,pages);
+      window.saveProductPageDb(window.productPageDb);
+      window.dispatchEvent(new Event('product-pages-hydrated'));
     } catch (error) { console.warn('[page-hydrate]',error.message); }
   }
   async function hydrateProductDatabase() {
@@ -100,7 +108,7 @@
     window.projectStore.save=function(data){const result=original(data);schedule(data);return result;};
     wrapped=true; schedule();
   }
-  window.addEventListener('hw-auth-login',schedule);
+  window.addEventListener('hw-auth-login',()=>{clearLocalPageCache();schedule();});
   window.addEventListener('viewrender',schedule);
   const poll=setInterval(() => { attach(); if(wrapped) clearInterval(poll); },100);
   window.hwBackendBridge={sync,syncPages,syncVersion,clearLegacyData};

@@ -944,7 +944,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
   const makePage=product=>({brand:product?.[11]||'GMT',brandImage:null,name:product?.[1]||'',variants:[[product?.[2]||'',(product?.[3]||[]).join('\n'),product?.[4]||'',product?.[5]||'']],features:[...(product?.[3]||[])],footer:'',footerImage:DEFAULT_FOOTER_IMG,footerBlocks:footerDefaults(),qrImage:null,photo:product?.[10]||null,drawing:null,imageLayout:{}});
   const productPageDbKey='door-hardware-product-page-database-v1';
   const loadProductPageDb=()=>{try{const db=JSON.parse(localStorage.getItem(productPageDbKey)||'{}');return db&&typeof db==='object'&&!Array.isArray(db)?db:{}}catch(e){return {}}};
-  const saveProductPageDb=db=>{window.productPageDb=db};
+  const saveProductPageDb=db=>{window.productPageDb=db;try{localStorage.setItem(productPageDbKey,JSON.stringify(db))}catch(e){}};
   const productPageDb=loadProductPageDb();
   window.productPageDb=productPageDb;
   window.saveProductPageDb=saveProductPageDb;

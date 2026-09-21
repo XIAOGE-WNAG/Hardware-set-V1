@@ -87,7 +87,29 @@
   function printCurrent(){
     if(!own(db(),state.selected)){message('请先选择一个产品单页。');return;}
     const page=normalize(db()[state.selected]);
-    const html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(pageTitle(page))+'</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,"Microsoft YaHei",sans-serif}.sheet{width:190mm;margin:auto}.sheet table{border-collapse:collapse;width:100%}.sheet td,.sheet th{border:1px solid #222;padding:6px}.sheet .bar{background:#86add8;padding:7px}.sheet img{max-width:100%;max-height:360px;object-fit:contain}</style></head><body><div class="sheet">'+window.productPageHtml(state.selected,false,page)+'</div></body></html>';
+    // 完整产品单页打印样式（与屏幕一致），否则 iframe 内只认这些类
+    const css='@page{size:A4 portrait;margin:0}'+
+      'body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:#fff}'+
+      '.product-sheet{width:210mm;min-height:297mm;box-sizing:border-box;padding:18mm 22mm 22mm;background:#fff;position:relative;margin:0 auto}'+
+      '.gmt{height:50px;margin:0 0 0 -18px;padding:0;font:bold 34px Georgia;color:#00a1d5;line-height:50px}'+
+      '.gmt img.brand-image{height:34px;width:auto}'+
+      '.product-frame{border:1px solid #111;box-sizing:border-box}'+
+      '.product-frame .caption{padding:6px;font-family:SimSun,serif}'+
+      '.blue-band{background:#86aedb;border-top:1px solid #111;border-bottom:1px solid #111;padding:6px;font-family:SimSun,serif}'+
+      '.product-visuals{display:grid;grid-template-columns:41% 59%;height:75mm;overflow:hidden}'+
+      '.product-visuals>div{position:relative;overflow:hidden}'+
+      '.product-visuals>div+div{border-left:1px solid #111}'+
+      '.product-visuals img{position:absolute;max-width:none}'+
+      '.product-visuals .custom-visual img{position:static;width:100%;height:100%;object-fit:contain}'+
+      '.order-table{font-size:13px;width:100%;border-collapse:collapse;table-layout:fixed}'+
+      '.order-table th{background:#aac5e5;font-size:13px;border:1px solid #111;padding:4px}'+
+      '.order-table td{height:31px;border:1px solid #111;padding:4px}'+
+      '.features{padding:5px;min-height:48mm;font:13px/1.5 SimSun,serif}'+
+      '.product-footer{margin:10mm auto 0;overflow:hidden;width:100%;height:16mm;position:relative}'+
+      '.product-footer-image{position:absolute;width:128mm;height:16mm;right:0;bottom:0;object-fit:fill}'+
+      'img{max-width:100%}';
+    const body=window.productPageHtml(state.selected,false,page);
+    const html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(pageTitle(page))+'</title><style>'+css+'</style></head><body><div class="product-sheet">'+body+'</div></body></html>';
     let frame=document.getElementById('__pdf_print_frame');
     if(!frame){frame=document.createElement('iframe');frame.id='__pdf_print_frame';frame.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';document.body.appendChild(frame);}
     const doc=frame.contentWindow.document;

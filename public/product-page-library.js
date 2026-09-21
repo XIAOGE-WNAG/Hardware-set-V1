@@ -84,7 +84,7 @@
     const html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(pageTitle(page))+'</title><style>body{font-family:Arial,"Microsoft YaHei",sans-serif;margin:24px}.sheet{width:680px;margin:auto}.sheet table{border-collapse:collapse;width:100%}.sheet td,.sheet th{border:1px solid #222;padding:6px}.sheet .bar{background:#86add8;padding:7px}.sheet img{max-width:100%;max-height:360px;object-fit:contain}</style></head><body><div class="sheet">'+window.productPageHtml(state.selected,false,page)+'</div></body></html>';
     downloadBlob(new Blob([html],{type:'application/msword'}),pageTitle(page)+'.doc');
   }
-  function printCurrent(){
+  async function printCurrent(){
     if(!own(db(),state.selected)){message('请先选择一个产品单页。');return;}
     const page=normalize(db()[state.selected]);
     // 完整产品单页打印样式（与屏幕一致），否则 iframe 内只认这些类
@@ -108,8 +108,32 @@
       '.product-footer{position:absolute;left:20mm;right:20mm;bottom:8mm;overflow:visible;min-height:14mm}'+
       '.product-footer-image{position:absolute;width:128mm;height:16mm;right:0;bottom:0;object-fit:fill}'+
       'img{max-width:100%}';
-    const body=window.productPageHtml(state.selected,false,page);
-    const html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(pageTitle(page))+'</title><style>'+css+'</style></head><body><div class="product-sheet">'+body+'</div></body></html>';
+    // PDF 原页：直接渲染为图片打印，不走 HTML 重排，避免排版错误
+    const file=page.sourceFile;
+    const isPdf=file&&/^application\/pdf$|\.pdf$/i.test(file.type||file.name);
+    let body='';
+    if(isPdf&&(file.data||file.url)){
+      try{
+        await loadScript('vendor/pdf.min.js',()=>window.pdfjsLib);
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc='vendor/pdf.worker.min.js';
+        const bytes=file.data?Uint8Array.from(atob(file.data.split(',')[1]),c=>c.charCodeAt(0)):new Uint8Array(await (await fetch(file.url)).arrayBuffer());
+        const pdf=await window.pdfjsLib.getDocument({data:bytes}).promise;
+        let imgs='';
+        for(let n=1;n<=pdf.numPages;n++){
+          const pdfPage=await pdf.getPage(n);
+          const viewport=pdfPage.getViewport({scale:2});
+          const canvas=document.createElement('canvas');
+          canvas.width=viewport.width;canvas.height=viewport.height;
+          await pdfPage.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+          imgs+='<img class="pdf-print-page" src="'+canvas.toDataURL('image/png')+'">';
+        }
+        body=imgs;
+      }catch(e){ body=window.productPageHtml(state.selected,false,page); message('PDF渲染失败，退回HTML排版：'+e.message); }
+    }else{
+      body=window.productPageHtml(state.selected,false,page);
+    }
+    const extraCss=isPdf?'@page{size:A4 portrait;margin:0}body{margin:0;background:#fff}.pdf-print-page{display:block;width:100%;height:auto;margin:0;page-break-after:always}':'@page{size:A4 portrait;margin:0}';
+    const html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(pageTitle(page))+'</title><style>'+extraCss+css+'</style></head><body>'+(isPdf?body:'<div class="product-sheet">'+body+'</div>')+'</body></html>';
     let frame=document.getElementById('__pdf_print_frame');
     if(!frame){frame=document.createElement('iframe');frame.id='__pdf_print_frame';frame.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';document.body.appendChild(frame);}
     const doc=frame.contentWindow.document;

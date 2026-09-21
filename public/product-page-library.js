@@ -132,7 +132,7 @@
     }else{
       body=window.productPageHtml(state.selected,false,page);
     }
-    const extraCss=isPdf?'@page{size:A4 portrait;margin:0}body{margin:0;background:#fff}.pdf-print-page{display:block;width:100%;height:auto;margin:0}.pdf-print-page+.pdf-print-page{page-break-before:always}':'@page{size:A4 portrait;margin:0}';
+    const extraCss=isPdf?'@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff}.pdf-print-page{display:block;width:210mm;height:297mm;object-fit:contain;margin:0;page-break-after:always}.pdf-print-page:last-child{page-break-after:auto}':'@page{size:A4 portrait;margin:0}';
     const html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(pageTitle(page))+'</title><style>'+extraCss+css+'</style></head><body>'+(isPdf?body:'<div class="product-sheet">'+body+'</div>')+'</body></html>';
     let frame=document.getElementById('__pdf_print_frame');
     if(!frame){frame=document.createElement('iframe');frame.id='__pdf_print_frame';frame.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';document.body.appendChild(frame);}

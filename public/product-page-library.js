@@ -70,14 +70,17 @@
     const file=page.sourceFile,isPdf=/^application\/pdf$|\.pdf$/i.test(file.type||file.name);
     return isPdf&&(file.data||file.url)?`<div class="pdf-source-pages" data-pdf-source><p>正在按原始 PDF 版式加载产品单页……</p></div>`:window.productPageHtml(state.selected,false,page);
   }
+  let pdfRendering=false;
   async function renderPdfSource(){
     const page=db()[state.selected],file=page?.sourceFile;if(!file||!/^application\/pdf$|\.pdf$/i.test(file.type||file.name)||!(file.data||file.url))return;
+    if(pdfRendering)return;pdfRendering=true;
     try{
       await loadScript('vendor/pdf.min.js',()=>window.pdfjsLib);window.pdfjsLib.GlobalWorkerOptions.workerSrc='vendor/pdf.worker.min.js';
-      const bytes=file.data?Uint8Array.from(atob(file.data.split(',')[1]),c=>c.charCodeAt(0)):new Uint8Array(await (await fetch(file.url)).arrayBuffer());
+      const bytes=file.data?Uint8Array.from(atob(file.data.split(',')[1]||''),c=>c.charCodeAt(0)):new Uint8Array(await (await fetch(file.url)).arrayBuffer());
       const pdf=await window.pdfjsLib.getDocument({data:bytes}).promise,host=root.querySelector('[data-pdf-source]');if(!host)return;host.innerHTML='';
       for(let n=1;n<=pdf.numPages;n++){const pdfPage=await pdf.getPage(n),viewport=pdfPage.getViewport({scale:1.35}),canvas=document.createElement('canvas');canvas.className='pdf-source-page';canvas.width=viewport.width;canvas.height=viewport.height;host.appendChild(canvas);await pdfPage.render({canvasContext:canvas.getContext('2d'),viewport}).promise;}
-    }catch(error){const host=root.querySelector('[data-pdf-source]');if(host)host.innerHTML=`<p class="pdf-error">原始 PDF 加载失败：${esc(error.message)}</p>`;}
+    }catch(error){console.warn('[pdf-source]',error);const host=root.querySelector('[data-pdf-source]');if(host)host.innerHTML=`<p class="pdf-error">原始 PDF 加载失败：${esc(error.message)}</p><p style="font-size:12px;color:#66747c;margin-top:8px">请使用「编辑当前页」查看 HTML 版本。</p>`;}
+    finally{pdfRendering=false;}
   }
   function exportWord(){
     const page=normalize(db()[state.selected]);

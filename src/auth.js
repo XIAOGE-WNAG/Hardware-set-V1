@@ -13,7 +13,7 @@ function secret() {
 function hashPassword(password, salt = crypto.randomBytes(16)) { return { salt: salt.toString('base64url'), hash: crypto.scryptSync(password, salt, 64).toString('base64url') }; }
 function verifyPassword(password, row) { return crypto.timingSafeEqual(Buffer.from(hashPassword(password, Buffer.from(row.password_salt, 'base64url')).hash), Buffer.from(row.password_hash)); }
 function tokenFor(user) {
-  const payload = Buffer.from(JSON.stringify({ sub: user.id, username: user.username, role: user.role, exp: Date.now() + 7 * 86400000 })).toString('base64url');
+  const hours = Number(user.session_hours)||168;const payload = Buffer.from(JSON.stringify({ sub: user.id, username: user.username, role: user.role, exp: Date.now() + hours*3600000 })).toString('base64url');
   const sig = crypto.createHmac('sha256', secret()).update(payload).digest('base64url');
   return `${payload}.${sig}`;
 }
@@ -23,7 +23,7 @@ function userFromToken(token) {
   if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
   let data; try { data = JSON.parse(Buffer.from(payload, 'base64url').toString()); } catch { return null; }
   if (!data.exp || data.exp < Date.now()) return null;
-  return db.prepare('SELECT id, username, display_name, role, must_change_password FROM users WHERE id=?').get(data.sub) || null;
+  const u=db.prepare('SELECT id, username, display_name, role, must_change_password, is_active FROM users WHERE id=?').get(data.sub);if(!u||!u.is_active)return null;return u;
 }
 function ensureAdmin() {
   if (db.prepare('SELECT COUNT(*) count FROM users').get().count) return;
@@ -31,4 +31,5 @@ function ensureAdmin() {
   db.prepare('INSERT INTO users(username,display_name,role,password_hash,password_salt,must_change_password,created_at) VALUES(?,?,?,?,?,?,?)').run(process.env.ADMIN_USERNAME || 'admin', 'Administrator', 'admin', p.hash, p.salt, process.env.ADMIN_PASSWORD ? 0 : 1, now());
 }
 function requireAuth(req, res, next) { const user = userFromToken((req.headers.authorization || '').replace(/^Bearer\s+/i, '')); if (!user) return res.status(401).json({ ok:false, error:'Unauthorized' }); req.user = user; next(); }
-module.exports = { now, hashPassword, verifyPassword, tokenFor, userFromToken, ensureAdmin, requireAuth };
+function requireAdmin(req,res,next){if(!req.user||req.user.role!=='admin')return res.status(403).json({ok:false,error:'需要管理员权限'});next();}
+module.exports = { now, hashPassword, verifyPassword, tokenFor, userFromToken, ensureAdmin, requireAuth, requireAdmin };

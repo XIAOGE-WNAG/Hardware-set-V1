@@ -22,7 +22,11 @@ function initDb() {
     CREATE TABLE IF NOT EXISTS product_pages (id INTEGER PRIMARY KEY, product_id INTEGER, sku_code TEXT UNIQUE NOT NULL, page_json TEXT NOT NULL, source_file_json TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS product_db (id INTEGER PRIMARY KEY CHECK (id=1), rows TEXT NOT NULL, updated_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS case_state (id INTEGER PRIMARY KEY CHECK (id=1), data TEXT NOT NULL, updated_at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
   `);
+  try { db.exec("ALTER TABLE users ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1"); } catch {}
+  try { db.exec("ALTER TABLE users ADD COLUMN session_hours INTEGER NOT NULL DEFAULT 168"); } catch {}
+  try { db.exec("ALTER TABLE users ADD COLUMN updated_at TEXT NOT NULL DEFAULT '"+new Date().toISOString()+"'"); } catch {}
   for (const table of ['projects','project_versions','categories','products','hardware_sets','hardware_set_items','door_schedules','product_pages']) {
     try { db.exec(`ALTER TABLE ${table} ADD COLUMN tenant_id TEXT NOT NULL DEFAULT 'default'`); } catch {}
   }

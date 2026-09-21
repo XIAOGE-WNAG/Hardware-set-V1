@@ -561,7 +561,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     document.querySelectorAll('[data-drag-image]').forEach(img=>{if(!img.parentElement.querySelector('[data-delete-image]')){const b=document.createElement('button');b.type='button';b.dataset.deleteImage=img.dataset.dragImage;b.className='image-delete-button';b.textContent='删除图片';b.title='删除当前图片';img.parentElement.append(b)}});
     document.querySelectorAll('.header-inline-image').forEach(img=>{if(!img.parentElement.querySelector('[data-delete-header-image]')){const b=document.createElement('button');b.type='button';b.dataset.deleteHeaderImage='1';b.className='image-delete-button';b.textContent='删除图片';b.title='删除抬头图片';img.parentElement.append(b)}});
     $('document').hidden=false;
-    window.pageToolbar.style.display=step===3?'flex':'none';
+    if(window.pageToolbar)window.pageToolbar.style.display=step===3?'flex':'none';
     // 每个配置组仅显示自身数据。
     document.querySelector('.app-header span').textContent=caseData.project.name;
     window.dispatchEvent(new Event('viewrender'));mountFilters();
@@ -1079,7 +1079,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     const code=caseData.selectedPage,page=pageFor(code),hasPdf=!!(page&&page.sourceFile);
     const codes=caseData.products.map(p=>p[0]);
     const switcherHtml='<label>选择产品 <select id="page-select">'+codes.map(item=>'<option value="'+esc(item)+'"'+(item===code?' selected':'')+'>'+esc(item)+' · '+esc(productFor(item)?.[1]||item)+'</option>').join('')+'</select></label><button type="button" id="edit-page-data">编辑当前单页</button><button type="button" onclick="window.__pickFooterImg()">更换页脚图</button><button type="button" onclick="window.__clearFooterImg()">删除页脚图</button>';
-    window.pageToolbar.innerHTML=switcherHtml;window.pageToolbar.style.display='flex';
+    if(window.pageToolbar){window.pageToolbar.innerHTML=switcherHtml;window.pageToolbar.style.display='flex';}
     documentArea.innerHTML=banner+(hasPdf?'<div class="wb-pdf-container" data-wb-pdf><p style="text-align:center;color:#666;padding:40px">正在加载产品 PDF 原页……</p></div>':pageHtml(code,false));
     if(hasPdf)renderPdfInto(documentArea.querySelector('[data-wb-pdf]'),page.sourceFile);
     const select=document.getElementById('page-select');

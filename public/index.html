@@ -280,6 +280,8 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   try{const raw=localStorage.getItem(key)||localStorage.getItem('door-hardware-project-v6-full-case');if(raw){const p=JSON.parse(raw);if(p.version!==2)fail('备份版本不符');removeInstallationData(p.data);validate(p.data);window.caseData=p.data;projectStore.savedAt=p.savedAt}else removeInstallationData(caseData)}catch(e){projectStore.loadError='本地数据未能读取，当前展示初始案例。原存储未覆盖：'+e.message}
   // 项目备份加载完后，全局产品库始终以独立存储为准挂载（不被项目备份中的空库覆盖）
   caseData.productDatabase=loadGlobalDb();
+  // 登录后从服务器拉取产品数据库覆盖本地
+  (async()=>{try{if(window.hwApi&&localStorage.getItem('hw_token')){const res=await window.hwApi.request('/api/product-db');if(res&&Array.isArray(res.rows)){caseData.productDatabase=res.rows;try{localStorage.setItem(dbKey,JSON.stringify(res.rows));localStorage.setItem(dbVersionKey,window.fullCaseData?.sourceVersion||'unknown');}catch(e){}if(typeof render==='function')render();}}}catch(e){console.warn('[product-db pull]',e.message)}})();
 })();
 
 ;
@@ -675,7 +677,9 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   // 产品数据库为跨项目共享的全局物料库，独立存储，新建/切换项目均不清空
   const dbKey='door-hardware-product-database-v1';
   const loadDb=()=>{try{const d=JSON.parse(localStorage.getItem(dbKey)||'[]');return Array.isArray(d)?d:[]}catch(e){return[]}};
-  const saveDb=rows=>{const arr=Array.isArray(rows)?structuredClone(rows):[];caseData.productDatabase=arr;try{localStorage.setItem(dbKey,JSON.stringify(arr));localStorage.setItem(dbVersionKey,window.fullCaseData?.sourceVersion||'unknown');}catch(e){}};
+  const saveDb=rows=>{const arr=Array.isArray(rows)?structuredClone(rows):[];caseData.productDatabase=arr;try{localStorage.setItem(dbKey,JSON.stringify(arr));localStorage.setItem(dbVersionKey,window.fullCaseData?.sourceVersion||'unknown');}catch(e){}
+    // 同步到服务器
+    try{if(window.hwApi&&localStorage.getItem('hw_token')){window.hwApi.request('/api/product-db',{method:'PUT',body:{rows:arr}}).catch(e=>console.warn('[product-db sync]',e.message));}}catch(e){}};
   window.productDatabaseStore={load:loadDb,save:saveDb};
   const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const read=()=>{const rows=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(rows))throw Error('历史项目数据格式错误');return rows};

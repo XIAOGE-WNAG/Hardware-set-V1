@@ -20,6 +20,7 @@ function initDb() {
     CREATE TABLE IF NOT EXISTS hardware_set_items (id INTEGER PRIMARY KEY, set_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity_per_door INTEGER NOT NULL DEFAULT 1, remark TEXT DEFAULT '');
     CREATE TABLE IF NOT EXISTS door_schedules (id INTEGER PRIMARY KEY, project_id INTEGER NOT NULL, seq INTEGER, floor TEXT DEFAULT '', door_number TEXT DEFAULT '', door_model TEXT DEFAULT '', room_function TEXT DEFAULT '', width REAL, height REAL, thickness REAL, qty INTEGER NOT NULL DEFAULT 1, material TEXT DEFAULT '', fire_rating TEXT DEFAULT '', door_type TEXT DEFAULT '', set_id INTEGER, section TEXT DEFAULT '', remark TEXT DEFAULT '');
     CREATE TABLE IF NOT EXISTS product_pages (id INTEGER PRIMARY KEY, product_id INTEGER, sku_code TEXT UNIQUE NOT NULL, page_json TEXT NOT NULL, source_file_json TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS product_db (id INTEGER PRIMARY KEY CHECK (id=1), rows TEXT NOT NULL, updated_at TEXT NOT NULL);
   `);
   for (const table of ['projects','project_versions','categories','products','hardware_sets','hardware_set_items','door_schedules','product_pages']) {
     try { db.exec(`ALTER TABLE ${table} ADD COLUMN tenant_id TEXT NOT NULL DEFAULT 'default'`); } catch {}

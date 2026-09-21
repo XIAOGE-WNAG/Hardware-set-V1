@@ -281,7 +281,7 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   // 项目备份加载完后，全局产品库始终以独立存储为准挂载（不被项目备份中的空库覆盖）
   caseData.productDatabase=loadGlobalDb();
   // 登录后从服务器拉取产品数据库覆盖本地
-  (async()=>{try{if(window.hwApi&&localStorage.getItem('hw_token')){const res=await window.hwApi.request('/api/product-db');if(res&&Array.isArray(res.rows)){caseData.productDatabase=res.rows;try{localStorage.setItem(dbKey,JSON.stringify(res.rows));localStorage.setItem(dbVersionKey,window.fullCaseData?.sourceVersion||'unknown');}catch(e){}if(typeof render==='function')render();}}}catch(e){console.warn('[product-db pull]',e.message)}})();
+  (async()=>{try{if(window.hwApi&&localStorage.getItem('hw_token')){const res=await window.hwApi.request('/api/product-db');const rows=res&&res.data&&Array.isArray(res.data.rows)?res.data.rows:null;if(rows){caseData.productDatabase=rows;try{localStorage.setItem(dbKey,JSON.stringify(rows));localStorage.setItem(dbVersionKey,window.fullCaseData?.sourceVersion||'unknown');}catch(e){}if(typeof render==='function')render();}}}catch(e){console.warn('[product-db pull]',e.message)}})();
 })();
 
 ;

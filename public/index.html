@@ -72,12 +72,12 @@ body[data-step="4"] .document{padding:0}
 <script defer src="product-page-library.js?v=2"></script>
 <script>window.addEventListener("error",e=>{document.title="ERR: "+e.message;var n=document.getElementById("document");if(n)n.innerHTML="<pre style=color:red;padding:20px>"+e.message+"\n"+(e.error&&e.error.stack||"")+"</pre>"})</script><script src="/js/api.js?v=20260921b"></script><script src="/js/backend-bridge.js"></script>
 <style id="left-rail-ui">
-:root{--rail-w:248px;--hdr-h:188px;--hub-h:280px}
+:root{--rail-w:248px;--hdr-h:180px;--hub-h:340px}
 .app-header{position:fixed!important;top:0;left:0;width:var(--rail-w);height:var(--hdr-h);flex-direction:column;align-items:stretch;justify-content:flex-start;gap:8px;padding:14px 14px 10px;margin:0;text-align:left;border-right:1px solid #0b2438;border-bottom:1px solid #0b2438;border-radius:0;z-index:30;overflow:hidden;box-sizing:border-box}
 .app-header strong{font-size:17px;letter-spacing:.06em;line-height:1.2}
 .app-header span{display:block;font-size:11px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .app-header button{margin-left:0;width:100%;flex:0 0 auto;padding:8px 10px;font-size:13px}
-#project-hub{position:fixed!important;top:var(--hdr-h);left:0;width:var(--rail-w);height:var(--hub-h);flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch;gap:7px;padding:12px 14px;margin:0;border-right:1px solid #0b2438;border-bottom:1px solid #0b2438;border-radius:0;overflow-x:hidden;overflow-y:auto;z-index:29;box-sizing:border-box}
+#project-hub{position:fixed!important;top:var(--hdr-h);left:0;width:var(--rail-w);height:var(--hub-h);flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch;gap:7px;padding:12px 14px;margin:0;border-right:1px solid #0b2438;border-bottom:1px solid #0b2438;border-radius:0;overflow-x:hidden;overflow:hidden;z-index:29;box-sizing:border-box}
 #project-hub::before{width:100%;margin:0 0 2px;font-size:12px;letter-spacing:.14em;font-weight:700;color:#10334d}
 #project-hub button{width:100%;flex:0 0 auto;text-align:center;padding:8px 10px;font-size:13px;box-sizing:border-box}
 #project-hub #project-error{display:none}

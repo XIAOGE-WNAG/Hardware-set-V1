@@ -23,10 +23,21 @@ function initDb() {
     CREATE TABLE IF NOT EXISTS product_db (id INTEGER PRIMARY KEY CHECK (id=1), rows TEXT NOT NULL, updated_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS case_state (id INTEGER PRIMARY KEY CHECK (id=1), data TEXT NOT NULL, updated_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, user_id INTEGER NOT NULL, token_hash TEXT NOT NULL UNIQUE, device_name TEXT, ip_address TEXT, user_agent TEXT, created_at TEXT NOT NULL, last_active_at TEXT NOT NULL, expires_at TEXT NOT NULL, revoked_at TEXT);
+    CREATE TABLE IF NOT EXISTS audit_logs (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, username TEXT, action TEXT, ip_address TEXT, user_agent TEXT, detail TEXT, created_at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS project_members (project_id INTEGER NOT NULL, user_id INTEGER NOT NULL, project_role TEXT NOT NULL DEFAULT 'viewer', joined_at TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY(project_id,user_id));
   `);
   try { db.exec("ALTER TABLE users ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1"); } catch {}
   try { db.exec("ALTER TABLE users ADD COLUMN session_hours INTEGER NOT NULL DEFAULT 168"); } catch {}
   try { db.exec("ALTER TABLE users ADD COLUMN updated_at TEXT NOT NULL DEFAULT '"+new Date().toISOString()+"'"); } catch {}
+  try { db.exec("ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'"); } catch {}
+  try { db.exec("ALTER TABLE users ADD COLUMN expires_at TEXT"); } catch {}
+  try { db.exec("ALTER TABLE users ADD COLUMN password_expires_at TEXT"); } catch {}
+  try { db.exec("ALTER TABLE users ADD COLUMN failed_login_count INTEGER NOT NULL DEFAULT 0"); } catch {}
+  try { db.exec("ALTER TABLE users ADD COLUMN locked_until TEXT"); } catch {}
+  try { db.exec("ALTER TABLE users ADD COLUMN last_login_at TEXT"); } catch {}
+    try { db.exec("ALTER TABLE case_state ADD COLUMN version INTEGER NOT NULL DEFAULT 1"); } catch {}
+  try { db.exec("ALTER TABLE product_db ADD COLUMN version INTEGER NOT NULL DEFAULT 1"); } catch {}
   for (const table of ['projects','project_versions','categories','products','hardware_sets','hardware_set_items','door_schedules','product_pages']) {
     try { db.exec(`ALTER TABLE ${table} ADD COLUMN tenant_id TEXT NOT NULL DEFAULT 'default'`); } catch {}
   }

@@ -84,15 +84,17 @@
     const html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(pageTitle(page))+'</title><style>body{font-family:Arial,"Microsoft YaHei",sans-serif;margin:24px}.sheet{width:680px;margin:auto}.sheet table{border-collapse:collapse;width:100%}.sheet td,.sheet th{border:1px solid #222;padding:6px}.sheet .bar{background:#86add8;padding:7px}.sheet img{max-width:100%;max-height:360px;object-fit:contain}</style></head><body><div class="sheet">'+window.productPageHtml(state.selected,false,page)+'</div></body></html>';
     downloadBlob(new Blob([html],{type:'application/msword'}),pageTitle(page)+'.doc');
   }
-  function exportPdf(){
+  function printCurrent(){
+    if(!own(db(),state.selected)){message('请先选择一个产品单页。');return;}
     const page=normalize(db()[state.selected]);
-    const html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(pageTitle(page))+'</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,"Microsoft YaHei",sans-serif}.sheet{width:680px;margin:auto}.sheet table{border-collapse:collapse;width:100%}.sheet td,.sheet th{border:1px solid #222;padding:6px}.sheet .bar{background:#86add8;padding:7px}.sheet img{max-width:100%;max-height:360px;object-fit:contain}</style></head><body><div class="sheet">'+window.productPageHtml(state.selected,false,page)+'</div></body></html>';
+    const html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(pageTitle(page))+'</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,"Microsoft YaHei",sans-serif}.sheet{width:190mm;margin:auto}.sheet table{border-collapse:collapse;width:100%}.sheet td,.sheet th{border:1px solid #222;padding:6px}.sheet .bar{background:#86add8;padding:7px}.sheet img{max-width:100%;max-height:360px;object-fit:contain}</style></head><body><div class="sheet">'+window.productPageHtml(state.selected,false,page)+'</div></body></html>';
     let frame=document.getElementById('__pdf_print_frame');
     if(!frame){frame=document.createElement('iframe');frame.id='__pdf_print_frame';frame.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';document.body.appendChild(frame);}
     const doc=frame.contentWindow.document;
     doc.open();doc.write(html);doc.close();
     frame.onload=()=>{setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print();}catch(e){message('打印失败：'+e.message);}},200);};
   }
+  function exportPdf(){printCurrent();}
   function leave() {
     if(state.pending){message('图片正在读取，请稍候。');return false;}
     if(state.dirty&&!confirm('放弃当前未保存的产品单页修改？'))return false;
@@ -254,5 +256,5 @@
     if(button&&!button.hasAttribute('data-product-page-database')&&!close()){e.preventDefault();e.stopImmediatePropagation();}
   },true);
   window.addEventListener('beforeunload',e=>{if(state.dirty){e.preventDefault();e.returnValue='';}});
-  window.productPageLibrary={open,close};
+  window.productPageLibrary={open,close,printCurrent,isActive:()=>!!state.active};
 })();

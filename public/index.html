@@ -986,6 +986,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
   ensurePages(caseData);
   try{projectStore.save(caseData)}catch(error){console.warn('产品单页默认数据保存失败',error)}
   const pageFor=code=>caseData.pages?.[code]||blank();
+  window.pageFor=pageFor;
   const productFor=code=>caseData.products.find(product=>product[0]===code);
   function layer(page,key,inner){const saved=page.imageLayout?.[key]||{},valid=Number.isFinite(Number(saved.scale)),scale=valid?Math.min(4,Math.max(.3,Number(saved.scale))):1,x=valid?(Number(saved.x)||0):0,y=valid?(Number(saved.y)||0):0;return '<div class="product-image-layer" data-product-image="'+key+'" style="transform:translate('+x+'px,'+y+'px) scale('+scale+')">'+inner+'<span class="product-image-resize-handle" data-product-image-resize="'+key+'" title="拖动调整图片大小"></span></div>'}
   function photoHtml(page,product){

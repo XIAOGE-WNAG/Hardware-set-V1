@@ -280,8 +280,8 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   try{const raw=localStorage.getItem(key)||localStorage.getItem('door-hardware-project-v6-full-case');if(raw){const p=JSON.parse(raw);if(p.version!==2)fail('备份版本不符');removeInstallationData(p.data);validate(p.data);window.caseData=p.data;projectStore.savedAt=p.savedAt}else removeInstallationData(caseData)}catch(e){projectStore.loadError='本地数据未能读取，当前展示初始案例。原存储未覆盖：'+e.message}
   // 项目备份加载完后，全局产品库始终以独立存储为准挂载（不被项目备份中的空库覆盖）
   caseData.productDatabase=loadGlobalDb();
-  // 登录后从服务器拉取产品数据库覆盖本地
-  (async()=>{try{if(window.hwApi&&localStorage.getItem('hw_token')){const res=await window.hwApi.request('/api/product-db');const rows=res&&res.data&&Array.isArray(res.data.rows)?res.data.rows:null;if(rows){caseData.productDatabase=rows;try{localStorage.setItem(dbKey,JSON.stringify(rows));localStorage.setItem(dbVersionKey,window.fullCaseData?.sourceVersion||'unknown');}catch(e){}if(typeof render==='function')render();}}}catch(e){console.warn('[product-db pull]',e.message)}})();
+  window.__pullProductDb=async function(){try{if(window.hwApi&&localStorage.getItem('hw_token')){const res=await window.hwApi.request('/api/product-db');const rows=res&&res.data&&Array.isArray(res.data.rows)?res.data.rows:null;if(rows!==null){caseData.productDatabase=rows;try{localStorage.setItem(dbKey,JSON.stringify(rows));localStorage.setItem(dbVersionKey,window.fullCaseData?.sourceVersion||'unknown');}catch(e){}if(typeof render==='function')render();}}}catch(e){console.warn('[product-db pull]',e.message)}};
+  window.__pullProductDb();
 })();
 
 ;
@@ -300,7 +300,7 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   function showLogin(){document.querySelector('.auth-mask')?.remove();
     const mask=document.createElement('div');mask.className='auth-mask';mask.innerHTML='<form class="auth-card"><div class="auth-logo"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="1"/><circle cx="15.3" cy="12" r="1.1" fill="#fff" stroke="none"/></svg></div><h2>门五金配置系统</h2><p>Door Hardware Configuration System<br>请输入账号和密码进入项目工作台。</p><label>账号<input name="account" autocomplete="username" required placeholder="请输入账号"></label><label>密码<input name="password" type="password" autocomplete="current-password" required placeholder="请输入密码"></label><p class="auth-tip">账号由服务器统一管理，登录后可进行项目配置与导出。</p><p class="auth-error" aria-live="polite"></p><button type="submit">登 录</button></form>';
     document.body.append(mask);mask.querySelector('input').focus();
-    mask.querySelector('form').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);try{const result=await window.hwApi.login(String(f.get('account')).trim(),String(f.get('password')));gate.user={...result,role:result.user.role};mask.remove();updateStatus();if(result.user.mustChangePassword)showChangePassword()}catch(error){mask.querySelector('.auth-error').textContent=error.message}};
+    mask.querySelector('form').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);try{const result=await window.hwApi.login(String(f.get('account')).trim(),String(f.get('password')));gate.user={...result,role:result.user.role};mask.remove();updateStatus();window.__pullProductDb&&window.__pullProductDb();if(result.user.mustChangePassword)showChangePassword()}catch(error){mask.querySelector('.auth-error').textContent=error.message}};
     mask.querySelectorAll('[data-pay]').forEach(b=>b.remove());
   }
   function showChangePassword(){const mask=document.createElement('div');mask.className='auth-mask';mask.innerHTML='<form class="auth-card"><h2>首次登录请修改密码</h2><p>新密码至少 6 位。</p><label>新密码<input name="password" type="password" minlength="6" required></label><p class="auth-error"></p><button type="submit">保存新密码</button></form>';document.body.append(mask);mask.querySelector('form').onsubmit=async e=>{e.preventDefault();try{await window.hwApi.changePassword(new FormData(e.currentTarget).get('password'));mask.remove()}catch(error){mask.querySelector('.auth-error').textContent=error.message}}}
@@ -314,7 +314,7 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
     window.authGate=gate;window.authGate.purchase=purchase;
     const header=document.querySelector('.app-header');if(header&&!header.querySelector('.auth-status')){const span=document.createElement('span');span.className='auth-status';span.textContent='未登录';header.append(span)}
   }
-  async function start(){init();const logout=document.createElement('button');logout.textContent='安全退出';logout.title='退出登录';logout.onclick=()=>{localStorage.removeItem(sessionKey);location.reload()};logout.dataset.logout='';document.querySelector('.app-header')?.append(logout);try{if(session()){const result=(await window.hwApi.me()).data;gate.user={...result,role:result.role};updateStatus();if(result.must_change_password)showChangePassword()}else showLogin()}catch{showLogin()}}
+  async function start(){init();const logout=document.createElement('button');logout.textContent='安全退出';logout.title='退出登录';logout.onclick=()=>{localStorage.removeItem(sessionKey);location.reload()};logout.dataset.logout='';document.querySelector('.app-header')?.append(logout);try{if(session()){const result=(await window.hwApi.me()).data;gate.user={...result,role:result.role};updateStatus();window.__pullProductDb&&window.__pullProductDb();if(result.must_change_password)showChangePassword()}else showLogin()}catch{showLogin()}}
   window.addEventListener('viewrender',()=>{if(gate.user)updateStatus()});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
   window.authGate=gate;

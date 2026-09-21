@@ -90,7 +90,7 @@
     // 完整产品单页打印样式（与屏幕一致），否则 iframe 内只认这些类
     const css='@page{size:A4 portrait;margin:0}'+
       'body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:#fff}'+
-      '.product-sheet{width:210mm;min-height:297mm;box-sizing:border-box;padding:18mm 22mm 22mm;background:#fff;position:relative;margin:0 auto}'+
+      '.product-sheet{width:210mm;height:297mm;box-sizing:border-box;padding:16mm 20mm 14mm;background:#fff;position:relative;margin:0 auto;display:flex;flex-direction:column;overflow:hidden}'+
       '.gmt{height:50px;margin:0 0 0 -18px;padding:0;font:bold 34px Georgia;color:#00a1d5;line-height:50px}'+
       '.gmt img.brand-image{height:34px;width:auto}'+
       '.product-frame{border:1px solid #111;box-sizing:border-box}'+
@@ -104,8 +104,8 @@
       '.order-table{font-size:13px;width:100%;border-collapse:collapse;table-layout:fixed}'+
       '.order-table th{background:#aac5e5;font-size:13px;border:1px solid #111;padding:4px}'+
       '.order-table td{height:31px;border:1px solid #111;padding:4px}'+
-      '.features{padding:5px;min-height:48mm;font:13px/1.5 SimSun,serif}'+
-      '.product-footer{margin:10mm auto 0;overflow:hidden;width:100%;height:16mm;position:relative}'+
+      '.features{padding:5px;min-height:30mm;font:12px/1.4 SimSun,serif;flex:1 1 auto;overflow:hidden}'+
+      '.product-footer{margin:6mm auto 0;overflow:hidden;width:100%;height:14mm;position:relative;flex:0 0 auto}'+
       '.product-footer-image{position:absolute;width:128mm;height:16mm;right:0;bottom:0;object-fit:fill}'+
       'img{max-width:100%}';
     const body=window.productPageHtml(state.selected,false,page);

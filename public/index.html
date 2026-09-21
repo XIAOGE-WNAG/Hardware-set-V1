@@ -363,7 +363,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
   const descriptions=['按楼层收集门参数，逐门关联五金组','查看各 SET 的单樘用量及对应总数','按产品代码查看项目用量','编辑产品单页','维护产品基本数据'];
 
   let step=0,timer,headerSelected=0;
-  const hit=row=>JSON.stringify(row).toLowerCase().includes($('search').value.trim().toLowerCase());
+  const hit=row=>{if(row==null)return false;try{const q=($('search')&&$('search').value||'').trim().toLowerCase();return JSON.stringify(row).toLowerCase().includes(q);}catch(e){console.warn('[search-hit]',e.message);return false;}};
   const cols=widths=>'<colgroup>'+widths.map(w=>`<col style="width:${w}%">`).join('')+'</colgroup>';
   const title=(cn,en,n)=>`<tr><th class="title" colspan="${n}">${cn}<br><span class="en">${en}</span></th></tr>`;
   const th=(cn,en)=>`<th>${cn}<br><span class="en">${en}</span></th>`;
@@ -498,7 +498,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
       rows=rows.filter(r=>r.some(c=>c&&c.trim()));
       // 识别并跳过表头（首行首列含 编号/no/code，或首行整体像表头）
       if(rows.length){
-        const head=(rows[0][0]||'').replace(/^\uFEFF/,'').toLowerCase();
+        const head=((rows[0]&&rows[0][0])||'').replace(/^\uFEFF/,'').toLowerCase();
         if(/编号|型号|no\.?|code|序号|物料号|model/i.test(head))rows=rows.slice(1);
       }
       const valid=rows.filter(r=>r[0]&&r[0].trim());

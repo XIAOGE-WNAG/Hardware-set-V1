@@ -68,7 +68,7 @@
   function sourceHtml(page){
     if(!page?.sourceFile)return '';
     const file=page.sourceFile,isPdf=/^application\/pdf$|\.pdf$/i.test(file.type||file.name);
-    return isPdf&&(file.data||file.url)?`<div class="pdf-source-pages" data-pdf-source><p>正在按原始 PDF 版式加载产品单页……</p></div>`:window.productPageHtml(state.selected,false,page);
+    return isPdf&&(file.data||file.url)?`<div class="pdf-source-pages" data-pdf-source style="width:100%;height:100%;min-height:600px"><iframe src="${file.url||''}" style="width:100%;height:100%;min-height:600px;border:0" title="PDF"></iframe></div>`:window.productPageHtml(state.selected,false,page);
   }
   let pdfRendering=false;
   async function renderPdfSource(){

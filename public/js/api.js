@@ -22,5 +22,5 @@
     if(response.status===401){tokenStore.removeItem(key);window.dispatchEvent(new CustomEvent('hw-auth-expired'))}
     if(!response.ok)throw Error(body.error||'请求失败（'+response.status+'）');return body;
   }
-  window.hwApi={request,login:async(username,password)=>{const result=await request('/api/auth/login',{method:'POST',body:JSON.stringify({username,password})});tokenStore.setItem(key,result.data.token);window.dispatchEvent(new CustomEvent('hw-auth-login',{detail:result.data}));return result.data},me:()=>request('/api/auth/me'),changePassword:password=>request('/api/auth/change-password',{method:'POST',body:JSON.stringify({password})}),tokenKey:key};
+  window.hwApi={request,login:async(username,password)=>{const result=await request('/api/auth/login',{method:'POST',body:JSON.stringify({username,password})});tokenStore.setItem(key,result.data.token);window.dispatchEvent(new CustomEvent('hw-auth-login',{detail:result.data}));return result.data},me:async()=>{const result=await request('/api/auth/me');window.dispatchEvent(new CustomEvent('hw-auth-validated'));return result},changePassword:password=>request('/api/auth/change-password',{method:'POST',body:JSON.stringify({password})}),tokenKey:key};
 })();

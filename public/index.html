@@ -189,7 +189,8 @@ dialog[open]{left:10px;right:10px;top:10px;bottom:10px}
 .product-frame .order-table th,.product-frame .order-table td{border:1px solid #111!important}
 .product-frame .product-visuals>div+div{border-left:1px solid #111!important}
 }
-</style></head><body>
+</style><style>body:not(.auth-ready)>header,body:not(.auth-ready)>nav,body:not(.auth-ready)>main,body:not(.auth-ready)>#notice{visibility:hidden}</style></head><body>
+<script>(()=>{const ready=()=>document.body.classList.add('auth-ready');window.addEventListener('hw-auth-login',ready);window.addEventListener('hw-auth-validated',ready);const observer=new MutationObserver(()=>{if(document.querySelector('.auth-mask'))ready()});observer.observe(document.body,{childList:true})})();</script>
 <header class="app-header"><strong>门五金配置</strong><span>钱江世纪城总部大楼 · 2标段</span><button id="print">打印 / 另存 PDF</button></header><nav id="workflow" aria-label="4个功能模块"></nav><main><div class="tools"><h1 id="module-title"></h1><div class="controls"><label id="search-label">查找 <input id="search" type="search" placeholder="门号、位置、产品代码"></label><label id="set-label" hidden>配置组 <select id="set-select"><option>SET-01</option><option>SET-02</option><option>SET-02D</option></select></label><button id="export">导出排版表格</button></div></div><p class="source-note" id="source-note"></p><div id="viewport" class="viewport" tabindex="0" aria-label="表格区域，可横向滚动"><article id="document" class="document"></article></div><footer class="pager"><button id="previous">上一步</button><span id="step-description"></span><button id="next">下一步</button></footer></main><div id="notice" role="status" aria-live="polite"></div><script>
 /* ===== data.js ===== */
 // 截图转录节选。各表均保留原始数量，不以截图节选冒充完整项目。

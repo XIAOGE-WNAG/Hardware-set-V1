@@ -1,4 +1,5 @@
 const express = require('express');
+const compression = require('compression');
 const path = require('node:path');
 const fs = require('node:fs');
 const { db, initDb, root } = require('./db');
@@ -6,7 +7,7 @@ const { now, hashPassword, verifyPassword, newToken, createSession, ensureAdmin,
 const apiRoutes = require('./routes');
 
 initDb(); ensureAdmin();
-const app = express(); app.use(express.json({ limit:'20mb' }));
+const app = express(); app.use(compression()); app.use(express.json({ limit:'20mb' }));
 fs.mkdirSync(path.join(root, 'public', 'uploads'), { recursive:true });
 
 // simple in-memory rate limiter

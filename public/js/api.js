@@ -5,8 +5,9 @@
     const isForm=options.body instanceof FormData, headers={...(isForm?{}:{'Content-Type':'application/json'}),...(options.headers||{})}, token=tokenStore.getItem(key);
     if(token)headers.Authorization='Bearer '+token;
     let reqBody=options.body;if(!isForm&&reqBody&&typeof reqBody!=='string')reqBody=JSON.stringify(reqBody);
-    const response=await fetch(url,{...options,headers,body:reqBody});let body;
-    try{body=await response.json()}catch{body={error:await response.text()}}
+    const response=await fetch(url,{...options,headers,body:reqBody});
+    const raw=await response.text();
+    let body;try{body=raw?JSON.parse(raw):{}}catch{body={error:raw||'服务器返回了无法解析的响应'}}
     if(response.status===401){tokenStore.removeItem(key);window.dispatchEvent(new CustomEvent('hw-auth-expired'))}
     if(!response.ok)throw Error(body.error||'请求失败（'+response.status+'）');return body;
   }

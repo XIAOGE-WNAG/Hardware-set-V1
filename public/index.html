@@ -283,7 +283,22 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   try{const raw=localStorage.getItem(key)||localStorage.getItem('door-hardware-project-v6-full-case');if(raw){const p=JSON.parse(raw);if(p.version!==2)fail('备份版本不符');removeInstallationData(p.data);validate(p.data);window.caseData=p.data;projectStore.savedAt=p.savedAt}else removeInstallationData(caseData)}catch(e){projectStore.loadError='本地数据未能读取，当前展示初始案例。原存储未覆盖：'+e.message}
   // 项目备份加载完后，全局产品库始终以独立存储为准挂载（不被项目备份中的空库覆盖）
   caseData.productDatabase=loadGlobalDb();
-  window.__pullCaseState=async function(){try{if(window.hwApi&&localStorage.getItem('hw_token')){const res=await window.hwApi.request('/api/case-state');const remote=res&&res.data&&res.data.data;if(remote&&typeof remote==='object'){try{validate(remote);remote.productDatabase=window.caseData.productDatabase;window.caseData=remote;try{localStorage.setItem(key,JSON.stringify({version:2,savedAt:res.data.updatedAt,data:remote}));}catch(e){}if(typeof render==='function')render();}catch(e){console.warn('[case-state validate]',e.message)}}}}catch(e){console.warn('[case-state pull]',e.message)}};
+  window.__migrateBase64=async function(root){
+    // 扫描 root 里所有 data:image/...base64 字段，上传到服务器，替换为 URL
+    async function uploadB64(b64){
+      try{const m=/^data:image\/(png|jpeg|webp);base64,(.+)$/.exec(b64);if(!m)return null;const bin=atob(m[2]);const arr=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);const mime='image/'+m[1];const file=new File([arr],'upload.'+m[1],{type:mime});const form=new FormData();form.append('file',file);const res=await window.hwApi.request('/api/upload/image',{method:'POST',body:form});return res&&res.data&&res.data.url||null;}catch(e){console.warn('[migrate]',e.message);return null;}
+    }
+    async function walk(obj){
+      if(!obj||typeof obj!=='object')return;
+      for(const k of Object.keys(obj)){
+        const v=obj[k];
+        if(typeof v==='string'&&v.startsWith('data:image/')){const url=await uploadB64(v);if(url)obj[k]=url;}
+        else if(v&&typeof v==='object')await walk(v);
+      }
+    }
+    await walk(root);
+  };
+  window.__pullCaseState=async function(){try{if(window.hwApi&&localStorage.getItem('hw_token')){const res=await window.hwApi.request('/api/case-state');const remote=res&&res.data&&res.data.data;if(remote&&typeof remote==='object'){try{validate(remote);remote.productDatabase=window.caseData.productDatabase;window.caseData=remote;await window.__migrateBase64(remote);try{localStorage.setItem(key,JSON.stringify({version:2,savedAt:res.data.updatedAt,data:remote}));window.hwApi.request('/api/case-state',{method:'PUT',body:{data:remote}}).catch(()=>{});}catch(e){}if(typeof render==='function')render();}catch(e){console.warn('[case-state validate]',e.message)}}}}catch(e){console.warn('[case-state pull]',e.message)}};
   window.__pullProductDb=async function(){try{if(window.hwApi&&localStorage.getItem('hw_token')){const res=await window.hwApi.request('/api/product-db');const rows=res&&res.data&&Array.isArray(res.data.rows)?res.data.rows:null;if(rows!==null){caseData.productDatabase=rows;try{localStorage.setItem(dbKey,JSON.stringify(rows));localStorage.setItem(dbVersionKey,window.fullCaseData?.sourceVersion||'unknown');}catch(e){}if(typeof render==='function')render();}}}catch(e){console.warn('[product-db pull]',e.message)}};
   window.__pullProductDb();
 })();
@@ -632,7 +647,14 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
   function close(){if(busy){$('edit-error').textContent='图片正在读取，请稍候。';return}if(changed&&!confirm('放弃本次未保存的修改？'))return;modal.close();document.body.classList.remove('database-editor-mode');draft=null;}
   const download=(obj,name)=>{const u=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
   $('edit-data').onclick=()=>{if(workbench.step===4){document.querySelector('[data-db-col]')?.focus();workbench.notice('请直接在产品数据库单元格中编辑，使用新增行按钮添加记录。');return}openEditor()};$('cancel-top').onclick=close;$('cancel-edit').onclick=close;modal.addEventListener('cancel',e=>{e.preventDefault();close()});
-  async function serverImage(file){return await new Promise((resolve,reject)=>{const reader=new FileReader;reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)})}
+  async function serverImage(file){
+    if(window.hwApi&&localStorage.getItem('hw_token')){
+      const form=new FormData();form.append('file',file);
+      try{const res=await window.hwApi.request('/api/upload/image',{method:'POST',body:form});if(res&&res.data&&res.data.url)return res.data.url;}catch(e){console.warn('[image upload]',e.message);}
+    }
+    // fallback: base64
+    return await new Promise((resolve,reject)=>{const reader=new FileReader;reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});
+  }
   modal.addEventListener('input',e=>{if(e.target.matches('[data-path]')){changed=true;collect();totals()}});
   modal.addEventListener('change',async e=>{
     if(e.target.id==='record-select'){collect();index=Number(e.target.value);draw();return}

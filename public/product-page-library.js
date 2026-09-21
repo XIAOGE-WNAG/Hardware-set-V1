@@ -79,7 +79,7 @@
       const bytes=file.data?Uint8Array.from(atob(file.data.split(',')[1]||''),c=>c.charCodeAt(0)):new Uint8Array(await (await fetch(file.url)).arrayBuffer());
       const pdf=await window.pdfjsLib.getDocument({data:bytes}).promise,host=root.querySelector('[data-pdf-source]');if(!host)return;host.innerHTML='';
       for(let n=1;n<=pdf.numPages;n++){const pdfPage=await pdf.getPage(n),viewport=pdfPage.getViewport({scale:1.35}),canvas=document.createElement('canvas');canvas.className='pdf-source-page';canvas.width=viewport.width;canvas.height=viewport.height;host.appendChild(canvas);await pdfPage.render({canvasContext:canvas.getContext('2d'),viewport}).promise;}
-    }catch(error){console.warn('[pdf-source]',error);const host=root.querySelector('[data-pdf-source]');if(host)host.innerHTML=`<p class="pdf-error">原始 PDF 加载失败：${esc(error.message)}</p><p style="font-size:12px;color:#66747c;margin-top:8px">请使用「编辑当前页」查看 HTML 版本。</p>`;}
+    }catch(error){console.warn('[pdf-source]',error);const host=root.querySelector('[data-pdf-source]');if(host){host.innerHTML=`<p class="pdf-error">原始 PDF 加载失败：${esc(error.message)}</p><button onclick="this.parentElement.outerHTML=window.productPageHtml(window.productPageDb.selected,false,window.productPageDb.currentPage||{})" style="margin-top:8px;padding:6px 12px">查看 HTML 版本</button>`;}}
     finally{pdfRendering=false;}
   }
   function exportWord(){

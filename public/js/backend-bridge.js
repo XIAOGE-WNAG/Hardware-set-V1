@@ -110,7 +110,8 @@
     wrapped=true; schedule();
   }
   window.addEventListener('hw-auth-login',()=>{clearLocalPageCache();schedule();});
-  window.addEventListener('viewrender',schedule);
+  // Do NOT listen to 'viewrender' — it creates an infinite loop:
+  // viewrender → schedule → hydratePages → product-pages-hydrated → render → viewrender → ...
   const poll=setInterval(() => { attach(); if(wrapped) clearInterval(poll); },100);
   window.hwBackendBridge={sync,syncPages,syncVersion,clearLegacyData};
 })();

@@ -767,7 +767,6 @@ window.fullCaseData.page=structuredClone(window.caseData.page);
     mask.querySelector('#um-list').onclick=async e=>{const btn=e.target.closest('button');if(!btn)return;const tr=btn.closest('tr');const uid=tr.dataset.uid;const body={displayName:tr.querySelector('[data-f=displayName]').value,role:tr.querySelector('[data-f=role]').value,isActive:tr.querySelector('[data-f=isActive]').value==='1',sessionHours:Number(tr.querySelector('[data-f=sessionHours]').value)};try{if(btn.dataset.act==='save'){await window.hwApi.request('/api/users/'+uid,{method:'PUT',body});refresh();}else if(btn.dataset.act==='del'){if(confirm('确定删除该用户？')){await window.hwApi.request('/api/users/'+uid,{method:'DELETE'});refresh();}}else if(btn.dataset.act==='reset'){const p=prompt('输入新密码（至少6位）');if(p&&p.length>=6){await window.hwApi.request('/api/users/'+uid,{method:'PUT',body:{password:p}});alert('已重置');}}}catch(ex){alert(ex.message)}}};
   }
   window.projectManager={saveHistory:()=>run(save),newProject:()=>run(fresh),openHistory:()=>run(history)};
-  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 

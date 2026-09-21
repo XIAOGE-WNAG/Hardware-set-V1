@@ -105,7 +105,7 @@
       '.order-table th{background:#aac5e5;font-size:13px;border:1px solid #111;padding:4px}'+
       '.order-table td{height:31px;border:1px solid #111;padding:4px}'+
       '.features{padding:5px;min-height:30mm;font:12px/1.4 SimSun,serif;flex:1 1 auto;overflow:visible}'+
-      '.product-footer{margin:auto auto 0;overflow:visible;width:100%;min-height:14mm;position:relative;flex:0 0 auto}'+
+      '.product-footer{position:absolute;left:20mm;right:20mm;bottom:8mm;overflow:visible;min-height:14mm}'+
       '.product-footer-image{position:absolute;width:128mm;height:16mm;right:0;bottom:0;object-fit:fill}'+
       'img{max-width:100%}';
     const body=window.productPageHtml(state.selected,false,page);

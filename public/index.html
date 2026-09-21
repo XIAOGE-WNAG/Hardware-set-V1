@@ -379,7 +379,11 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     ['樘数','门材质','门扇开启方式','五金组','所属标段','备注'].forEach(x=>html+=`<th rowspan="2">${x}</th>`);
     html+='</tr><tr><th>宽度</th><th>高度</th><th>门厚</th></tr><tr>'+en.map(x=>`<th>${x}</th>`).join('')+'</tr></thead><tbody>';
     let band='';const rows=caseData.doors.filter(hit);
-    const setOptions=caseData.sets.map(s=>`<option value="${esc(s.code)}">${esc(s.code)}</option>`).join('');rows.forEach(r=>{const next=r[1].startsWith('主楼')?'主楼1-4层':r[1].startsWith('辅楼')?'辅楼7-14层':r[1];if(next!==band){html+=`<tr class="floor-band"><td colspan="14">${esc(next)}</td></tr>`;band=next}html+=`<tr data-edit-door="${caseData.doors.indexOf(r)}">`+r.map((x,i)=>`<td>${i===11?`<select class="door-set-select" data-door-index="${caseData.doors.indexOf(r)}" aria-label="选择五金组">${setOptions.replace('value="'+esc(x)+'"','value="'+esc(x)+'" selected')}</select>`:esc(x)}</td>`).join('')+'</tr>'});
+    const PAGE_SIZE=200;
+    const showAll=window.__doorShowAll===true;
+    const visibleRows=showAll?rows:rows.slice(0,PAGE_SIZE);
+    if(rows.length>PAGE_SIZE&&!showAll)html+=`<tr class="floor-band"><td colspan="14" style="background:#e3f2fd;cursor:pointer" onclick="window.__doorShowAll=true;render()">显示前 ${PAGE_SIZE} 条 / 共 ${rows.length} 条，点击加载全部</td></tr>`;
+    const setOptions=caseData.sets.map(s=>`<option value="${esc(s.code)}">${esc(s.code)}</option>`).join('');visibleRows.forEach(r=>{const next=r[1].startsWith('主楼')?'主楼1-4层':r[1].startsWith('辅楼')?'辅楼7-14层':r[1];if(next!==band){html+=`<tr class="floor-band"><td colspan="14">${esc(next)}</td></tr>`;band=next}html+=`<tr data-edit-door="${caseData.doors.indexOf(r)}">`+r.map((x,i)=>`<td>${i===11?`<select class="door-set-select" data-door-index="${caseData.doors.indexOf(r)}" aria-label="选择五金组">${setOptions.replace('value="'+esc(x)+'"','value="'+esc(x)+'" selected')}</select>`:esc(x)}</td>`).join('')+'</tr>'});
     return html+(rows.length?'':'<tr><td colspan="14">没有符合条件的门表记录</td></tr>')+'</tbody></table>';
   }
   function setBlock(s){

@@ -561,7 +561,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     document.querySelectorAll('[data-drag-image]').forEach(img=>{if(!img.parentElement.querySelector('[data-delete-image]')){const b=document.createElement('button');b.type='button';b.dataset.deleteImage=img.dataset.dragImage;b.className='image-delete-button';b.textContent='删除图片';b.title='删除当前图片';img.parentElement.append(b)}});
     document.querySelectorAll('.header-inline-image').forEach(img=>{if(!img.parentElement.querySelector('[data-delete-header-image]')){const b=document.createElement('button');b.type='button';b.dataset.deleteHeaderImage='1';b.className='image-delete-button';b.textContent='删除图片';b.title='删除抬头图片';img.parentElement.append(b)}});
     $('document').hidden=false;
-    pageToolbar.style.display=step===3?'flex':'none';
+    window.pageToolbar.style.display=step===3?'flex':'none';
     // 每个配置组仅显示自身数据。
     document.querySelector('.app-header span').textContent=caseData.project.name;
     window.dispatchEvent(new Event('viewrender'));mountFilters();
@@ -632,7 +632,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
   const names=['门表','五金配置组别','产品清单页','产品单页'];
   let pageToolbar=null;
   const actions=document.createElement('div');actions.className='edit-actions';actions.innerHTML='<button id="edit-data">编辑数据</button><span id="save-state" role="status"></span><button id="backup-data">导出项目备份</button><button id="restore-data">导入项目备份</button><input id="backup-file" type="file" accept=".json" hidden>';$('viewport').before(actions);
-  pageToolbar=document.createElement('div');pageToolbar.id='page-toolbar';pageToolbar.style.display='none';$('viewport').before(pageToolbar);
+  window.pageToolbar=document.createElement('div');window.pageToolbar.id='page-toolbar';window.pageToolbar.style.display='none';$('viewport').before(window.pageToolbar);
   const modal=document.createElement('dialog');modal.id='data-editor';modal.innerHTML='<form id="edit-form"><header><h2 id="edit-title"></h2><button type="button" id="cancel-top" aria-label="关闭编辑">×</button></header><p class="edit-help">填写后点击“保存修改”。切换记录会保留本次草稿；“取消”放弃整次编辑。</p><div id="edit-selector"></div><div id="edit-fields"></div><p id="edit-error" role="alert"></p><footer><button type="button" id="draft-backup">导出草稿备份</button><button type="button" id="cancel-edit">取消</button><button type="submit" class="save-button">保存修改</button></footer></form>';document.body.append(modal);
   let draft=null,step=0,index=0,busy=0,changed=false;
   const get=(root,path)=>path.split('.').reduce((v,k)=>v[k],root);
@@ -1079,7 +1079,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     const code=caseData.selectedPage,page=pageFor(code),hasPdf=!!(page&&page.sourceFile);
     const codes=caseData.products.map(p=>p[0]);
     const switcherHtml='<label>选择产品 <select id="page-select">'+codes.map(item=>'<option value="'+esc(item)+'"'+(item===code?' selected':'')+'>'+esc(item)+' · '+esc(productFor(item)?.[1]||item)+'</option>').join('')+'</select></label><button type="button" id="edit-page-data">编辑当前单页</button><button type="button" onclick="window.__pickFooterImg()">更换页脚图</button><button type="button" onclick="window.__clearFooterImg()">删除页脚图</button>';
-    pageToolbar.innerHTML=switcherHtml;pageToolbar.style.display='flex';
+    window.pageToolbar.innerHTML=switcherHtml;window.pageToolbar.style.display='flex';
     documentArea.innerHTML=banner+(hasPdf?'<div class="wb-pdf-container" data-wb-pdf><p style="text-align:center;color:#666;padding:40px">正在加载产品 PDF 原页……</p></div>':pageHtml(code,false));
     if(hasPdf)renderPdfInto(documentArea.querySelector('[data-wb-pdf]'),page.sourceFile);
     const select=document.getElementById('page-select');

@@ -88,15 +88,15 @@
     if(!own(db(),state.selected)){message('请先选择一个产品单页。');return;}
     const page=normalize(db()[state.selected]);
     // 完整产品单页打印样式（与屏幕一致），否则 iframe 内只认这些类
-    const css='@page{size:A4 portrait;margin:12mm 14mm 14mm 14mm}'+
+    const css='@page{size:A4 portrait;margin:0}'+
       'body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:#fff}'+
-      '.product-sheet{width:182mm;height:271mm;box-sizing:border-box;padding:4mm 6mm 4mm;background:#fff;position:relative;margin:0 auto;display:flex;flex-direction:column;overflow:hidden}'+
+      '.product-sheet{width:210mm;height:297mm;box-sizing:border-box;padding:16mm 20mm 14mm;background:#fff;position:relative;margin:0 auto;display:flex;flex-direction:column;overflow:hidden}'+
       '.gmt{height:50px;margin:0 0 0 -18px;padding:0;font:bold 34px Georgia;color:#00a1d5;line-height:50px}'+
       '.gmt img.brand-image{height:34px;width:auto}'+
       '.product-frame{border:1px solid #111;box-sizing:border-box}'+
       '.product-frame .caption{padding:6px;font-family:SimSun,serif}'+
       '.blue-band{background:#86aedb;border-top:1px solid #111;border-bottom:1px solid #111;padding:6px;font-family:SimSun,serif}'+
-      '.product-visuals{display:grid;grid-template-columns:41% 59%;height:62mm;overflow:hidden}'+
+      '.product-visuals{display:grid;grid-template-columns:41% 59%;height:75mm;overflow:hidden}'+
       '.product-visuals>div{position:relative;overflow:hidden}'+
       '.product-visuals>div+div{border-left:1px solid #111}'+
       '.product-visuals img{position:absolute;max-width:none}'+

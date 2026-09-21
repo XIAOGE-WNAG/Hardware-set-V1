@@ -199,7 +199,7 @@
     if(!state.selectedMany.length&&state.selected)state.selectedMany=[state.selected];
     root.innerHTML=`<div class="tools"><h1>产品单页数据库</h1><button data-action="back">返回项目</button></div>
       <p class="source-note">全局产品单页库 · ${codes.length} 个单页 · 新增和修改保存在数据库中</p>
-      <div class="library-actions"><button data-action="add">新增产品单页</button><button data-action="edit" ${codes.length?'':'disabled'}>编辑当前单页</button><button data-action="delete" ${codes.length?'':'disabled'}>删除选中单页</button><button data-action="export-word" ${codes.length?'':'disabled'}>导出当前单页 Word</button><button data-action="export-pdf" ${codes.length?'':'disabled'}>导出当前单页 PDF</button><label class="library-import">导入产品单页 <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple data-library-import></label></div>
+      <div class="library-actions"><button data-action="add">新增产品单页</button><button data-action="edit" ${codes.length?'':'disabled'}>编辑当前单页</button><button data-action="delete" ${codes.length?'':'disabled'}>删除选中单页</button><button data-action="export-pdf" ${codes.length?'':'disabled'}>导出当前单页 PDF</button><label class="library-import">导入产品单页 <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple data-library-import></label></div>
       <p data-library-status role="status">${esc(status)}</p>
       ${codes.length?`<div class="page-switcher"><label>选择产品单页 <select data-library-select multiple size="1" aria-label="选择产品单页（可多选删除）">${codes.map(code=>`<option value="${esc(code)}" ${state.selectedMany.includes(code)?'selected':''}>${esc(displayLabel(code))}</option>`).join('')}</select></label><button data-action="edit">编辑当前单页</button></div>`:''}
       <div class="library-viewport" tabindex="0"><article class="document product-sheet">
@@ -216,7 +216,7 @@
       }
     });
     root.querySelector('[data-library-import]').onchange=importFiles;
-    root.onclick=e=>{const action=e.target.closest('[data-action]')?.dataset.action;if(action==='back')close();if(action==='add')edit(true);if(action==='edit')edit(false);if(action==='delete'){const selected=state.selectedMany.filter(code=>own(db(),code));if(!selected.length){message('请先在下拉选择器中选择要删除的单页。');return;}if(confirm(`确定删除选中的 ${selected.length} 个产品单页吗？删除后无法从本机数据库恢复，请先导出备份。`)){const next={...db()};selected.forEach(code=>delete next[code]);persist(next);state.selected='';state.selectedMany=[];render(`已删除 ${selected.length} 个产品单页。`);}}if(action==='export-word')exportWord();if(action==='export-pdf')exportPdf();};
+    root.onclick=e=>{const action=e.target.closest('[data-action]')?.dataset.action;if(action==='back')close();if(action==='add')edit(true);if(action==='edit')edit(false);if(action==='delete'){const selected=state.selectedMany.filter(code=>own(db(),code));if(!selected.length){message('请先在下拉选择器中选择要删除的单页。');return;}if(confirm(`确定删除选中的 ${selected.length} 个产品单页吗？删除后无法从本机数据库恢复，请先导出备份。`)){const next={...db()};selected.forEach(code=>delete next[code]);persist(next);state.selected='';state.selectedMany=[];render(`已删除 ${selected.length} 个产品单页。`);}}if(action==='export-pdf')exportPdf();};
     root.oninput=null;root.onchange=null;root.onsubmit=null;
     if(codes.length&&db()[state.selected].sourceFile)void renderPdfSource();
   }

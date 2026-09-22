@@ -90,6 +90,8 @@ main .tools{margin-bottom:6px}
 body:has(#data-editor[open]) .viewport{max-height:calc(100vh - 540px)!important;min-height:200px}
 body[data-step="4"] .viewport{background:#dce0e3}
 .pager{margin-top:10px}
+#page-toolbar{display:none;flex-wrap:wrap;align-items:center;gap:10px;padding:0;margin:0 0 12px}
+#page-toolbar .page-switcher{margin:0;flex:1}
 .page-switcher{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 14px;margin:0 0 12px;background:#f4f7f9;border:1px solid #d4dde3;border-radius:8px}
 #page-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:8px 14px;margin:0 0 10px;background:#f4f7f9;border:1px solid #d4dde3;border-radius:8px}
 #page-toolbar label{display:flex;align-items:center;gap:6px;font-size:13px;color:#37474f}
@@ -1379,7 +1381,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     const banner=missing.length?'<div style="margin:0 0 10px;padding:8px 12px;background:#fff3cd;border:1px solid #ffe08a;border-radius:4px;font:13px/1.5 sans-serif">⚠ 以下 '+missing.length+' 个 BOM 料号暂无产品单页，将输出占位页：'+esc(missing.join('、'))+'<br>请到「产品单页数据库」导入 PDF 并在编辑页填写对应「绑定 BOM 料号」。</div>':'';
     const code=caseData.selectedPage,page=pageFor(code),hasPdf=!!(page&&page.sourceFile);
     const codes=caseData.products.map(p=>p[0]);
-    const switcherHtml='<label>选择产品 <select id="page-select">'+codes.map(item=>'<option value="'+esc(item)+'"'+(item===code?' selected':'')+'>'+esc(item)+' · '+esc(productFor(item)?.[1]||item)+'</option>').join('')+'</select></label><button type="button" id="edit-page-data">编辑当前单页</button><button type="button" onclick="window.__pickFooterImg()">更换页脚图</button><button type="button" onclick="window.__clearFooterImg()">删除页脚图</button>';
+    const switcherHtml='<div class="page-switcher"><label>选择产品 <select id="page-select">'+codes.map(item=>'<option value="'+esc(item)+'"'+(item===code?' selected':'')+'>'+esc(item)+' · '+esc(productFor(item)?.[1]||item)+'</option>').join('')+'</select></label><button type="button" id="edit-page-data">编辑当前单页</button><button type="button" onclick="window.__pickFooterImg()">更换页脚图</button><button type="button" onclick="window.__clearFooterImg()">删除页脚图</button></div>';
     if(window.pageToolbar){window.pageToolbar.innerHTML=switcherHtml;window.pageToolbar.style.display='flex';}
     documentArea.innerHTML=banner+(hasPdf?'<div class="wb-pdf-container" data-wb-pdf><p style="text-align:center;color:#666;padding:40px">正在加载产品 PDF 原页……</p></div>':pageHtml(code,false));
     if(hasPdf)renderPdfInto(documentArea.querySelector('[data-wb-pdf]'),page.sourceFile);

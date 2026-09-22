@@ -3,10 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "type": "commonjs",
-  "engines": { "node": ">=22" },
-  "scripts": { "start": "node src/server.js", "verify": "node verify-library.cjs" },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "verify": "node verify-library.cjs"
+  },
   "dependencies": {
+    "compression": "^1.8.2",
     "express": "^5.1.0",
+    "express-session": "^1.19.0",
     "multer": "^2.0.2",
     "xlsx": "^0.18.5"
   }

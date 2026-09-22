@@ -219,7 +219,7 @@ dialog[open]{left:10px;right:10px;top:10px;bottom:10px}
 </style><style>body:not(.auth-ready)>header,body:not(.auth-ready)>nav,body:not(.auth-ready)>main,body:not(.auth-ready)>#notice{display:none!important}</style><style>
 /* ===== v4 高精度产品单页 CSS ===== */
 .product-sheet:has(.page){padding:0!important;width:794px!important;max-width:794px!important;min-height:1123px!important;background:#fff}
-.page{position:relative;width:794px;min-height:1123px;background:#fff;overflow:hidden;font-family:"SimSun","Songti SC",serif;color:#111;box-sizing:border-box;padding:0 19.05mm}
+.page{position:relative;width:794px;min-height:1123px;background:#fff;overflow:hidden;font-family:"SimSun","Songti SC",serif;color:#111;box-sizing:border-box;padding:0}
 .page *{box-sizing:border-box}
 
 /* 可拖动 Logo */
@@ -285,7 +285,7 @@ dialog[open]{left:10px;right:10px;top:10px;bottom:10px}
 .product-sheet .page{margin:20px auto}
 @media print{.product-sheet{padding:0!important}.product-sheet .page{margin:0!important}}
 
-.page{width:210mm;min-height:297mm;background:#fff;margin:20px auto;position:relative;box-shadow:0 4px 20px rgba(0,0,0,.2);padding:12mm 20mm;box-sizing:border-box;overflow:hidden}
+.page{width:210mm;min-height:297mm;background:#fff;margin:20px auto;position:relative;box-shadow:0 4px 20px rgba(0,0,0,.2);padding:0;box-sizing:border-box;overflow:hidden}
 .page .draggable-logo{position:absolute;cursor:move;user-select:none;border:1px dashed transparent;z-index:5}
 .page .draggable-logo:hover{border-color:rgba(26,115,232,.5)}
 .page .draggable-logo.selected{border-color:#1a73e8;border-style:solid}
@@ -294,7 +294,7 @@ dialog[open]{left:10px;right:10px;top:10px;bottom:10px}
 .page .draggable-logo.selected .logo-resize-handle{display:block}
 .page .gmt-logo-wrap{top:9mm;left:14mm;width:30mm}
 .page .footer-logo-wrap{bottom:15mm;right:20mm;width:120mm}
-.page .product-table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:22mm}
+.page .product-table{width:calc(100% - 44mm);margin:22mm 22mm 0;border-collapse:collapse;table-layout:fixed}
 .page .product-table td{border:0.5pt solid #000;vertical-align:middle;padding:0}
 .page .editable{outline:none;min-height:1em}
 .page .editable:focus{background:rgba(26,115,232,.06)}
@@ -1458,7 +1458,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
       return hasValidPdf(page&&page.sourceFile)?'<section class="print-page wb-print-pdf" data-print-pdf></section>':'<section class="print-page">'+pageHtml(code,false)+'</section>';
     }).join('');
     documentArea.innerHTML=sections;
-    let style=document.getElementById('print-size');if(!style){style=document.createElement('style');style.id='print-size';document.head.append(style)}style.textContent='@media print{@page{size:A4 portrait;margin:0}html,body{background:#fff;margin:0;padding:0}.print-page{position:relative;width:210mm;height:297mm;overflow:hidden;break-after:page;page-break-after:always;break-inside:avoid}.print-page:last-child{break-after:auto;page-break-after:auto}.print-page .page{width:210mm!important;height:297mm!important;min-height:297mm!important;margin:0!important;padding:0!important}.print-page .page-switcher,.print-page .logo-resize-handle,.print-page .img-resize-handle,.print-page .img-delete-btn,.print-page .img-placeholder{display:none!important}.print-page .placed-img{border:none!important}.print-page .placed-img img{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .blue-bar td{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .order-head td{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .draggable-logo{border:none!important}.print-page .product-table{margin-top:22mm!important}.print-product-pages{width:100%!important;max-width:none!important;min-height:0!important;padding:0!important}.wb-print-pdf canvas{width:210mm!important;height:297mm!important;display:block}}'
+    let style=document.getElementById('print-size');if(!style){style=document.createElement('style');style.id='print-size';document.head.append(style)}style.textContent='@media print{@page{size:A4 portrait;margin:0}html,body{background:#fff;margin:0;padding:0}.print-page{position:relative;width:210mm;height:297mm;overflow:hidden;break-after:page;page-break-after:always;break-inside:avoid}.print-page:last-child{break-after:auto;page-break-after:auto}.print-page .page{width:210mm!important;height:297mm!important;min-height:297mm!important;margin:0!important;padding:0!important}.print-page .page-switcher,.print-page .logo-resize-handle,.print-page .img-resize-handle,.print-page .img-delete-btn,.print-page .img-placeholder{display:none!important}.print-page .placed-img{border:none!important}.print-page .placed-img img{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .blue-bar td{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .order-head td{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .draggable-logo{border:none!important}.print-page .product-table{margin:22mm 22mm 0!important;width:calc(100% - 44mm)!important}.print-product-pages{width:100%!important;max-width:none!important;min-height:0!important;padding:0!important}.wb-print-pdf canvas{width:210mm!important;height:297mm!important;display:block}}'
     const pdfTargets=[];
     documentArea.querySelectorAll('[data-print-pdf]').forEach((el,i)=>{const code=caseData.products[i][0];pdfTargets.push({el,src:pageFor(code)?.sourceFile});});
     (async()=>{for(const t of pdfTargets){const ok=await renderPdfInto(t.el,t.src);if(!ok){const code=t.el.closest('[data-print-pdf]')?.dataset?.code||caseData.products[pdfTargets.indexOf(t)]?.[0];const page=pageFor(code);if(page)t.el.innerHTML=pageHtml(code,false);}}window.print();caseData.selectedPage=savedSelected;renderCurrent();})();

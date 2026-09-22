@@ -1414,10 +1414,21 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
       const pdfContainer=documentArea.querySelector('[data-wb-pdf]');
       renderPdfInto(pdfContainer,page.sourceFile).then(ok=>{
         if(!ok){
-          // PDF 加载失败，回退到 HTML 渲染
-          documentArea.innerHTML=banner+pageHtml(code,false);
-          bindV4Interactions();
+          try{
+            console.log('PDF加载失败，开始回退到HTML渲染...');
+            const html=pageHtml(code,false);
+            console.log('HTML渲染完成，长度:',html.length);
+            documentArea.innerHTML=banner+html;
+            console.log('页面已更新，开始绑定交互...');
+            bindV4Interactions();
+            console.log('交互绑定完成');
+          }catch(err){
+            console.error('回退HTML渲染出错:',err);
+            documentArea.innerHTML=banner+'<p style="color:#c00;padding:20px">产品单页渲染失败：'+esc(err.message)+'</p>';
+          }
         }
+      }).catch(err=>{
+        console.error('renderPdfInto Promise出错:',err);
       });
     }
     const select=document.getElementById('page-select');
@@ -1438,7 +1449,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     let style=document.getElementById('print-size');if(!style){style=document.createElement('style');style.id='print-size';document.head.append(style)}style.textContent='@media print{@page{size:A4 portrait;margin:0}html,body{background:#fff;margin:0;padding:0}.print-page{position:relative;width:210mm;height:297mm;overflow:hidden;break-after:page;page-break-after:always;break-inside:avoid}.print-page:last-child{break-after:auto;page-break-after:auto}.print-page .page{width:210mm!important;height:297mm!important;min-height:297mm!important;margin:0!important;padding:0!important}.print-page .page-switcher,.print-page .logo-resize-handle,.print-page .img-resize-handle,.print-page .img-delete-btn,.print-page .img-placeholder{display:none!important}.print-page .placed-img{border:none!important}.print-page .placed-img img{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .blue-bar td{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .order-head td{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .draggable-logo{border:none!important}.print-page .product-table{margin-top:22mm!important}.print-product-pages{width:100%!important;max-width:none!important;min-height:0!important;padding:0!important}.wb-print-pdf canvas{width:210mm!important;height:297mm!important;display:block}}'
     const pdfTargets=[];
     documentArea.querySelectorAll('[data-print-pdf]').forEach((el,i)=>{const code=caseData.products[i][0];pdfTargets.push({el,src:pageFor(code)?.sourceFile});});
-    (async()=>{for(const t of pdfTargets){await renderPdfInto(t.el,t.src);}window.print();caseData.selectedPage=savedSelected;renderCurrent();})();
+    (async()=>{for(const t of pdfTargets){const ok=await renderPdfInto(t.el,t.src);if(!ok){const code=t.el.closest('[data-print-pdf]')?.dataset?.code||caseData.products[pdfTargets.indexOf(t)]?.[0];const page=pageFor(code);if(page)t.el.innerHTML=pageHtml(code,false);}}window.print();caseData.selectedPage=savedSelected;renderCurrent();})();
   }
   const readPath=(root,path)=>path.split('.').reduce((value,key)=>value?.[key],root);
   function adaptProductEditor(){
@@ -1451,7 +1462,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
   if(editorDialog)new MutationObserver(()=>setTimeout(adaptProductEditor,0)).observe(editorDialog,{childList:true,subtree:true,attributes:true,attributeFilter:['open']});
   document.addEventListener('click',event=>{if(event.target.closest('#edit-page-data,#edit-data'))setTimeout(adaptProductEditor,0)},true);
   document.addEventListener('dblclick',event=>{if(window.workbench?.step===3&&event.target.closest('.product-sheet-content'))setTimeout(adaptProductEditor,0)},true);
-  document.getElementById('print').addEventListener('click',event=>{if(window.workbench?.step!==3)return;event.preventDefault();event.stopImmediatePropagation();printAll()},true);
+  document.getElementById('print').addEventListener('click',event=>{if(window.workbench?.step!==3&&window.workbench?.step!==4)return;event.preventDefault();event.stopImmediatePropagation();printAll()},true);
   document.addEventListener('dblclick',event=>{if(window.workbench?.step!==3||!event.target.closest('.product-sheet-content'))return;ensurePages(caseData)},true);
   window.addEventListener('viewrender',()=>setTimeout(renderCurrent,0));
   setTimeout(renderCurrent,0);

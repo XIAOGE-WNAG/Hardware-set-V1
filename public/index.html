@@ -1382,11 +1382,15 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     });
   }
   async function renderPdfInto(container,sourceFile){
-    if(!container||!sourceFile)return false;
+    console.log('[renderPdfInto] 开始执行, container=',!!container,'sourceFile=',!!sourceFile);
+    if(!container||!sourceFile){console.log('[renderPdfInto] 参数为空，返回false');return false;}
     try{
       await loadPdfJs();
+      console.log('[renderPdfInto] pdf.js加载完成');
       const bytes=sourceFile.data?Uint8Array.from(atob(String(sourceFile.data).split(',')[1]),c=>c.charCodeAt(0)):new Uint8Array(await (await fetch(sourceFile.url)).arrayBuffer());
+      console.log('[renderPdfInto] PDF字节读取完成，长度=',bytes.length);
       const pdf=await window.pdfjsLib.getDocument({data:bytes}).promise;
+      console.log('[renderPdfInto] PDF解析完成，页数=',pdf.numPages);
       container.innerHTML='';
       for(let n=1;n<=pdf.numPages;n++){
         const p=await pdf.getPage(n),viewport=p.getViewport({scale:1.5});
@@ -1395,10 +1399,14 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
         container.appendChild(canvas);
         await p.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
       }
+      console.log('[renderPdfInto] 渲染完成，返回true');
       return true;
-    }catch(e){console.warn('PDF 加载失败，回退到 HTML 渲染:',e.message);return false;}
+    }catch(e){
+      console.warn('[renderPdfInto] 捕获错误:',e.message,'，返回false');
+      return false;
+    }
   }
-  function renderCurrent(){
+  async function renderCurrent(){
     if(window.editorToolbar){if(window.workbench&&workbench.step===3)window.editorToolbar.classList.add('active');else window.editorToolbar.classList.remove('active');}
     if(!window.workbench||workbench.step!==3)return;
     ensurePages(caseData);
@@ -1413,24 +1421,24 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     documentArea.innerHTML=banner+(hasPdf?'<div class="wb-pdf-container" data-wb-pdf><p style="text-align:center;color:#666;padding:40px">正在加载产品 PDF 原页……</p></div>':pageHtml(code,false));
     if(hasPdf){
       const pdfContainer=documentArea.querySelector('[data-wb-pdf]');
-      renderPdfInto(pdfContainer,page.sourceFile).then(ok=>{
+      console.log('[renderCurrent] 开始调用renderPdfInto');
+      try{
+        const ok=await renderPdfInto(pdfContainer,page.sourceFile);
+        console.log('[renderCurrent] renderPdfInto返回:',ok);
         if(!ok){
-          try{
-            console.log('PDF加载失败，开始回退到HTML渲染...');
-            const html=pageHtml(code,false);
-            console.log('HTML渲染完成，长度:',html.length);
-            documentArea.innerHTML=banner+html;
-            console.log('页面已更新，开始绑定交互...');
-            bindV4Interactions();
-            console.log('交互绑定完成');
-          }catch(err){
-            console.error('回退HTML渲染出错:',err);
-            documentArea.innerHTML=banner+'<p style="color:#c00;padding:20px">产品单页渲染失败：'+esc(err.message)+'</p>';
-          }
+          console.log('[renderCurrent] PDF加载失败，开始回退到HTML渲染...');
+          const html=pageHtml(code,false);
+          console.log('[renderCurrent] HTML渲染完成，长度:',html.length);
+          documentArea.innerHTML=banner+html;
+          console.log('[renderCurrent] 页面已更新，开始绑定交互...');
+          bindV4Interactions();
+          console.log('[renderCurrent] 交互绑定完成');
         }
-      }).catch(err=>{
-        console.error('renderPdfInto Promise出错:',err);
-      });
+      }catch(err){
+        console.error('[renderCurrent] renderPdfInto抛出错误:',err);
+        documentArea.innerHTML=banner+pageHtml(code,false);
+        bindV4Interactions();
+      }
     }
     const select=document.getElementById('page-select');
     if(select)select.onchange=event=>{caseData.selectedPage=event.target.value;try{projectStore.save(caseData)}catch(error){workbench.notice('产品页保存失败：'+error.message)}renderCurrent()};

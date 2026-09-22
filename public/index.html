@@ -1381,7 +1381,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     });
   }
   async function renderPdfInto(container,sourceFile){
-    if(!container||!sourceFile)return;
+    if(!container||!sourceFile)return false;
     try{
       await loadPdfJs();
       const bytes=sourceFile.data?Uint8Array.from(atob(String(sourceFile.data).split(',')[1]),c=>c.charCodeAt(0)):new Uint8Array(await (await fetch(sourceFile.url)).arrayBuffer());
@@ -1394,7 +1394,8 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
         container.appendChild(canvas);
         await p.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
       }
-    }catch(e){container.innerHTML='<p style="color:#c00">PDF 加载失败：'+esc(e.message||e)+'</p>';}
+      return true;
+    }catch(e){console.warn('PDF 加载失败，回退到 HTML 渲染:',e.message);return false;}
   }
   function renderCurrent(){
     if(window.editorToolbar){if(window.workbench&&workbench.step===3)window.editorToolbar.classList.add('active');else window.editorToolbar.classList.remove('active');}
@@ -1409,7 +1410,16 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     const switcherHtml='<div class="page-switcher"><label>选择产品 <select id="page-select">'+codes.map(item=>'<option value="'+esc(item)+'"'+(item===code?' selected':'')+'>'+esc(item)+' · '+esc(productFor(item)?.[1]||item)+'</option>').join('')+'</select></label><button type="button" id="edit-page-data">编辑当前单页</button><button type="button" onclick="window.__pickFooterImg()">更换页脚图</button><button type="button" onclick="window.__clearFooterImg()">删除页脚图</button></div>';
     if(window.pageToolbar){window.pageToolbar.innerHTML=switcherHtml;window.pageToolbar.style.display='flex';}
     documentArea.innerHTML=banner+(hasPdf?'<div class="wb-pdf-container" data-wb-pdf><p style="text-align:center;color:#666;padding:40px">正在加载产品 PDF 原页……</p></div>':pageHtml(code,false));
-    if(hasPdf)renderPdfInto(documentArea.querySelector('[data-wb-pdf]'),page.sourceFile);
+    if(hasPdf){
+      const pdfContainer=documentArea.querySelector('[data-wb-pdf]');
+      renderPdfInto(pdfContainer,page.sourceFile).then(ok=>{
+        if(!ok){
+          // PDF 加载失败，回退到 HTML 渲染
+          documentArea.innerHTML=banner+pageHtml(code,false);
+          bindV4Interactions();
+        }
+      });
+    }
     const select=document.getElementById('page-select');
     if(select)select.onchange=event=>{caseData.selectedPage=event.target.value;try{projectStore.save(caseData)}catch(error){workbench.notice('产品页保存失败：'+error.message)}renderCurrent()};
     document.getElementById('edit-page-data')?.addEventListener('click',()=>document.getElementById('edit-data')?.click());

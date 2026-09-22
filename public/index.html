@@ -1381,9 +1381,12 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
       document.head.append(s);
     });
   }
+  function hasValidPdf(sourceFile){
+    return !!(sourceFile && (sourceFile.data || sourceFile.url));
+  }
   async function renderPdfInto(container,sourceFile){
-    console.log('[renderPdfInto] 开始执行, container=',!!container,'sourceFile=',!!sourceFile);
-    if(!container||!sourceFile){console.log('[renderPdfInto] 参数为空，返回false');return false;}
+    console.log('[renderPdfInto] 开始执行, container=',!!container,'sourceFile=',JSON.stringify(sourceFile));
+    if(!container||!hasValidPdf(sourceFile)){console.log('[renderPdfInto] 参数为空或无PDF数据，返回false');return false;}
     try{
       await loadPdfJs();
       console.log('[renderPdfInto] pdf.js加载完成');
@@ -1414,7 +1417,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     documentArea.className='document product-sheet';
     const missing=(caseData._missingPages||[]);
     const banner=missing.length?'<div style="margin:0 0 10px;padding:8px 12px;background:#fff3cd;border:1px solid #ffe08a;border-radius:4px;font:13px/1.5 sans-serif">⚠ 以下 '+missing.length+' 个 BOM 料号暂无产品单页，将输出占位页：'+esc(missing.join('、'))+'<br>请到「产品单页数据库」导入 PDF 并在编辑页填写对应「绑定 BOM 料号」。</div>':'';
-    const code=caseData.selectedPage,page=pageFor(code),hasPdf=!!(page&&page.sourceFile);
+    const code=caseData.selectedPage,page=pageFor(code),hasPdf=hasValidPdf(page&&page.sourceFile);
     const codes=caseData.products.map(p=>p[0]);
     const switcherHtml='<div class="page-switcher"><label>选择产品 <select id="page-select">'+codes.map(item=>'<option value="'+esc(item)+'"'+(item===code?' selected':'')+'>'+esc(item)+' · '+esc(productFor(item)?.[1]||item)+'</option>').join('')+'</select></label><button type="button" id="edit-page-data">编辑当前单页</button><button type="button" onclick="window.__pickFooterImg()">更换页脚图</button><button type="button" onclick="window.__clearFooterImg()">删除页脚图</button></div>';
     if(window.pageToolbar){window.pageToolbar.innerHTML=switcherHtml;window.pageToolbar.style.display='flex';}
@@ -1452,7 +1455,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     documentArea.className='document product-sheet print-product-pages';
     const sections=caseData.products.map(product=>{
       const code=product[0],page=pageFor(code);
-      return (page&&page.sourceFile)?'<section class="print-page wb-print-pdf" data-print-pdf></section>':'<section class="print-page">'+pageHtml(code,false)+'</section>';
+      return hasValidPdf(page&&page.sourceFile)?'<section class="print-page wb-print-pdf" data-print-pdf></section>':'<section class="print-page">'+pageHtml(code,false)+'</section>';
     }).join('');
     documentArea.innerHTML=sections;
     let style=document.getElementById('print-size');if(!style){style=document.createElement('style');style.id='print-size';document.head.append(style)}style.textContent='@media print{@page{size:A4 portrait;margin:0}html,body{background:#fff;margin:0;padding:0}.print-page{position:relative;width:210mm;height:297mm;overflow:hidden;break-after:page;page-break-after:always;break-inside:avoid}.print-page:last-child{break-after:auto;page-break-after:auto}.print-page .page{width:210mm!important;height:297mm!important;min-height:297mm!important;margin:0!important;padding:0!important}.print-page .page-switcher,.print-page .logo-resize-handle,.print-page .img-resize-handle,.print-page .img-delete-btn,.print-page .img-placeholder{display:none!important}.print-page .placed-img{border:none!important}.print-page .placed-img img{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .blue-bar td{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .order-head td{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .draggable-logo{border:none!important}.print-page .product-table{margin-top:22mm!important}.print-product-pages{width:100%!important;max-width:none!important;min-height:0!important;padding:0!important}.wb-print-pdf canvas{width:210mm!important;height:297mm!important;display:block}}'

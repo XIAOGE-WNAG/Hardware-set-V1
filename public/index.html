@@ -264,6 +264,60 @@ dialog[open]{left:10px;right:10px;top:10px;bottom:10px}
 }
 
 </style>
+<style>
+/* ===== v4 产品单页 - 单表格结构（与独立测试版一致） ===== */
+.product-sheet{padding:0!important;min-height:0!important}
+.product-sheet .page{margin:20px auto}
+@media print{.product-sheet{padding:0!important}.product-sheet .page{margin:0!important}}
+
+.page{width:210mm;min-height:297mm;background:#fff;margin:20px auto;position:relative;box-shadow:0 4px 20px rgba(0,0,0,.2);padding:12mm 20mm;box-sizing:border-box;overflow:hidden}
+.page .draggable-logo{position:absolute;cursor:move;user-select:none;border:1px dashed transparent;z-index:5}
+.page .draggable-logo:hover{border-color:rgba(26,115,232,.5)}
+.page .draggable-logo.selected{border-color:#1a73e8;border-style:solid}
+.page .draggable-logo img{width:100%;height:auto;display:block;pointer-events:none}
+.page .logo-resize-handle{position:absolute;width:12px;height:12px;background:#1a73e8;border:2px solid #fff;border-radius:50%;bottom:-6px;right:-6px;cursor:nwse-resize;display:none;z-index:10}
+.page .draggable-logo.selected .logo-resize-handle{display:block}
+.page .gmt-logo-wrap{top:9mm;left:14mm;width:30mm}
+.page .footer-logo-wrap{bottom:15mm;right:20mm;width:120mm}
+.page .product-table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:22mm}
+.page .product-table td{border:0.5pt solid #000;vertical-align:middle;padding:0}
+.page .editable{outline:none;min-height:1em}
+.page .editable:focus{background:rgba(26,115,232,.06)}
+.page .cat-row td{font-family:Arial,"黑体",sans-serif;font-size:14pt;font-weight:bold;text-align:left;padding:2mm 3mm;border-bottom:none}
+.page .blue-bar td{background:#84AEDF;font-size:13pt;font-weight:bold;text-align:left;padding:1.5mm 3mm}
+.page .img-row td{height:95mm;vertical-align:middle;text-align:center}
+.page .img-cell-inner{position:relative;width:100%;height:95mm;overflow:hidden;cursor:crosshair}
+.page .img-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#888;font-size:11pt;cursor:pointer;user-select:none}
+.page .placed-img{position:absolute;min-width:5mm;min-height:5mm;border:1px dashed transparent;cursor:move;user-select:none;overflow:visible}
+.page .placed-img:hover,.page .placed-img.selected{border-color:#1a73e8}
+.page .placed-img img{display:block;width:100%;height:100%;object-fit:fill;pointer-events:none}
+.page .img-resize-handle{position:absolute;right:-6px;bottom:-6px;width:18px;height:18px;border:2px solid #fff;border-radius:50%;background:#1a73e8;cursor:nwse-resize;display:none;z-index:20;touch-action:none}
+.page .placed-img.selected .img-resize-handle{display:block}
+.page .img-delete-btn{position:absolute;top:-10px;right:-10px;width:18px;height:18px;border-radius:50%;background:#d93025;color:#fff;font:bold 14px/18px Arial,sans-serif;text-align:center;cursor:pointer;display:none}
+.page .placed-img.selected .img-delete-btn{display:block}
+.page .order-head td{background:#A5C3E7;font-size:11pt;font-weight:bold;text-align:center;padding:1.5mm 2mm}
+.page .order-data td{font-size:11pt;text-align:center;padding:1.5mm 2mm}
+.page .feat-row td{font-size:11pt;padding:2mm 3mm;vertical-align:top;line-height:1.8}
+.page .feat-row li{list-style:none;padding-left:5mm;position:relative}
+.page .feat-row li::before{content:"●";position:absolute;left:0;font-size:8pt}
+.page col.c-model{width:21%}
+.page col.c-desc{width:40%}
+.page col.c-finish{width:23%}
+.page col.c-unit{width:16%}
+@media print{
+  .page{box-shadow:none;margin:0}
+  .page .draggable-logo{border:none!important}
+  .page .draggable-logo.selected{border:none!important}
+  .page .logo-resize-handle{display:none!important}
+  .page .img-resize-handle{display:none!important}
+  .page .img-delete-btn{display:none!important}
+  .page .img-placeholder{display:none!important}
+  .page .placed-img{border:none!important}
+  .page .editable:focus{background:transparent}
+  .page .blue-bar td{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .page .order-head td{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+}
+</style>
 </head><body>
 <script>(()=>{const ready=()=>document.body.classList.add('auth-ready');window.addEventListener('hw-auth-login',ready);window.addEventListener('hw-auth-validated',ready);const observer=new MutationObserver(()=>{if(document.querySelector('.auth-mask'))ready()});observer.observe(document.body,{childList:true})})();</script>
 <header class="app-header"><strong>门五金配置</strong><span>钱江世纪城总部大楼 · 2标段</span><button id="print">打印 / 另存 PDF</button></header><nav id="workflow" aria-label="4个功能模块"></nav><main><div class="tools"><h1 id="module-title"></h1><div class="controls"><label id="search-label">查找 <input id="search" type="search" placeholder="门号、位置、产品代码"></label><label id="set-label" hidden>配置组 <select id="set-select"><option>SET-01</option><option>SET-02</option><option>SET-02D</option></select></label><button id="export">导出排版表格</button></div></div><p class="source-note" id="source-note"></p><div id="viewport" class="viewport" tabindex="0" aria-label="表格区域，可横向滚动"><article id="document" class="document"></article></div><footer class="pager"><button id="previous">上一步</button><span id="step-description"></span><button id="next">下一步</button></footer></main><div id="notice" role="status" aria-live="polite"></div><script>
@@ -1071,21 +1125,18 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     const codes=caseData.products.map(item=>item[0]);
     const switcher=withSwitcher?'<div class="page-switcher"><label>选择产品 <select id="page-select">'+codes.map(item=>'<option value="'+esc(item)+'"'+(item===code?' selected':'')+'>'+esc(item)+' · '+esc(productFor(item)?.[1]||item)+'</option>').join('')+'</select></label><button type="button" id="edit-page-data">编辑当前单页</button></div>':'';
 
-    // GMT Logo 位置/大小（mm，新格式优先，旧格式兼容）
     const il=page.imageLayout||{};
     const gmtSrc=page.brandImage||DEFAULT_GMT_LOGO;
-    const gmtLeft=il.gmtLeft||'17mm';
-    const gmtTop=il.gmtTop||'18mm';
-    const gmtWidth=il.gmtWidth||(il.brandWidth?Math.round(il.brandWidth*0.264583)+'mm':'25mm');
+    const gmtLeft=il.gmtLeft||'14mm';
+    const gmtTop=il.gmtTop||'9mm';
+    const gmtWidth=il.gmtWidth||'30mm';
 
-    // 页尾 Logo 位置/大小
     const footerSrc=page.footerImage||DEFAULT_FOOTER_IMG;
-    const footerLeft=il.footerLeft||'50%';
-    const footerBottom=il.footerBottom||'8mm';
-    const footerWidth=il.footerWidth||(il.footerWidth?Math.round(il.footerWidth*0.264583)+'mm':'128mm');
-    const footerTransform=footerLeft==='50%'?'transform:translateX(-50%);':'';
+    const footerRight=il.footerRight||'20mm';
+    const footerBottom=il.footerBottom||'15mm';
+    const footerWidth=il.footerWidth||'120mm';
 
-    // 产品图片区（单格，支持多张可拖动图片）
+    // 产品图片区
     const placed=il.placedImages||[];
     let imagesHtml='';
     if(placed.length>0){
@@ -1097,24 +1148,25 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     }
     if(!imagesHtml)imagesHtml='<div class="img-placeholder">点击添加产品图片</div>';
 
-    // 订货信息表格
-    const variants=(page.variants||[]).map((row,ri)=>'<tr class="order-data" data-row="'+ri+'">'+row.map((value,ci)=>'<td contenteditable="true" data-cell="'+ci+'">'+esc(value).replaceAll('\n','<br>')+'</td>').join('')+'</tr>').join('');
+    // 订货信息行
+    const variants=(page.variants||[]).map((row,ri)=>'<tr class="order-data" data-row="'+ri+'">'+row.map((value,ci)=>'<td><div class="editable" contenteditable="true" data-cell="'+ci+'">'+esc(value).replaceAll('\n','<br>')+'</div></td>').join('')+'</tr>').join('');
 
     // 产品特性
-    const features=(page.features||[]).map((value,i)=>'<li data-feat="'+i+'"><div class="feat-text" contenteditable="true">'+esc(value)+'</div></li>').join('');
+    const features=(page.features||[]).map((value,i)=>'<li data-feat="'+i+'"><div class="editable" contenteditable="true">'+esc(value)+'</div></li>').join('');
 
     return switcher+'<div class="page">'
-      +'<div class="draggable-logo" data-logo="gmt" style="left:'+gmtLeft+';top:'+gmtTop+';width:'+gmtWidth+';"><img src="'+esc(gmtSrc)+'" alt="GMT Logo"><div class="logo-resize-handle"></div></div>'
-      +'<div class="product-sheet-content"><div class="product-frame">'
-      +'<div class="caption" contenteditable="true" data-field="name">'+esc(page.name||product[1]||'')+'</div>'
-      +'<div class="blue-band">产品图片：</div>'
-      +'<div class="product-visuals"><div class="img-cell" data-cell="photo"><div class="img-cell-inner">'+imagesHtml+'<input type="file" class="img-input" accept="image/*" style="display:none"></div></div></div>'
-      +'<div class="blue-band">订货信息：</div>'
-      +'<table class="order-table"><thead><tr><th>产品型号</th><th>产品描述</th><th>表面处理</th><th>单位</th></tr></thead><tbody>'+variants+'</tbody></table>'
-      +'<div class="blue-band">产品特性：</div>'
-      +'<div class="features"><ul>'+features+'</ul></div>'
-      +'</div></div>'
-      +'<div class="draggable-logo" data-logo="footer" style="left:'+footerLeft+';bottom:'+footerBottom+';width:'+footerWidth+';'+footerTransform+'"><img src="'+esc(footerSrc)+'" alt="页尾"><div class="logo-resize-handle"></div></div>'
+      +'<div class="draggable-logo gmt-logo-wrap" data-logo="gmt" style="left:'+gmtLeft+';top:'+gmtTop+';width:'+gmtWidth+';"><img src="'+esc(gmtSrc)+'" alt="GMT"><div class="logo-resize-handle"></div></div>'
+      +'<table class="product-table"><colgroup><col class="c-model"><col class="c-desc"><col class="c-finish"><col class="c-unit"></colgroup>'
+      +'<tr class="cat-row"><td colspan="4"><div class="editable" contenteditable="true" data-field="name">'+esc(page.name||product[1]||'')+'</div></td></tr>'
+      +'<tr class="blue-bar"><td colspan="4"><div class="editable" contenteditable="true">产品图片：</div></td></tr>'
+      +'<tr class="img-row"><td class="img-cell" colspan="4" data-cell="product-images"><div class="img-cell-inner">'+imagesHtml+'<input type="file" class="img-input" accept="image/*" style="display:none"></div></td></tr>'
+      +'<tr class="blue-bar"><td colspan="4"><div class="editable" contenteditable="true">订货信息：</div></td></tr>'
+      +'<tr class="order-head"><td><div class="editable" contenteditable="true">产品型号</div></td><td><div class="editable" contenteditable="true">产品描述</div></td><td><div class="editable" contenteditable="true">表面处理</div></td><td><div class="editable" contenteditable="true">单位</div></td></tr>'
+      +variants
+      +'<tr class="blue-bar"><td colspan="4"><div class="editable" contenteditable="true">产品特性：</div></td></tr>'
+      +'<tr class="feat-row"><td colspan="4"><ul>'+features+'</ul></td></tr>'
+      +'</table>'
+      +'<div class="draggable-logo footer-logo-wrap" data-logo="footer" style="right:'+footerRight+';bottom:'+footerBottom+';width:'+footerWidth+';"><img src="'+esc(footerSrc)+'" alt="页尾"><div class="logo-resize-handle"></div></div>'
       +'</div>';
   }
 
@@ -1144,7 +1196,8 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
           startX:e.clientX,startY:e.clientY,
           startLeft:parseFloat(logo.style.left)||0,
           startTop:parseFloat(logo.style.top)||0,
-          startBottom:parseFloat(logo.style.bottom)||0
+          startBottom:parseFloat(logo.style.bottom)||0,
+          startRight:parseFloat(logo.style.right)||0
         };
       });
       // 缩放
@@ -1223,7 +1276,8 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
       if(_drag.mode==='move'){
         _drag.el.style.left=(_drag.startLeft+dx)+'mm';
         if(_drag.logoType==='footer'){
-          _drag.el.style.bottom=(_drag.startBottom-dy)+'mm';
+          _drag.el.style.right=Math.max(0,_drag.startRight-dx)+'mm';
+          _drag.el.style.bottom=Math.max(0,_drag.startBottom-dy)+'mm';
         }else{
           _drag.el.style.top=(_drag.startTop+dy)+'mm';
         }
@@ -1244,7 +1298,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
           page.imageLayout.gmtTop=_drag.el.style.top;
           page.imageLayout.gmtWidth=_drag.el.style.width;
         }else{
-          page.imageLayout.footerLeft=_drag.el.style.left;
+          page.imageLayout.footerRight=_drag.el.style.right;
           page.imageLayout.footerBottom=_drag.el.style.bottom;
           page.imageLayout.footerWidth=_drag.el.style.width;
         }
@@ -1266,13 +1320,13 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
 
     // --- 富文本编辑保存 ---
     // 类别名
-    const caption=doc.querySelector('.caption[data-field="name"]');
+    const caption=doc.querySelector('.cat-row .editable[data-field="name"]');
     if(caption)caption.addEventListener('input',()=>{
       page.name=caption.innerText;
       try{projectStore.save(caseData)}catch(err){workbench.notice('类别名保存失败：'+err.message)}
     });
     // 订货信息表格
-    doc.querySelectorAll('.order-table td[contenteditable]').forEach(td=>{
+    doc.querySelectorAll('.order-data .editable[contenteditable]').forEach(td=>{
       td.addEventListener('input',()=>{
         const row=Number(td.closest('tr').dataset.row);
         const cell=Number(td.dataset.cell);
@@ -1282,7 +1336,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
       });
     });
     // 产品特性
-    doc.querySelectorAll('.feat-text[contenteditable]').forEach(ft=>{
+    doc.querySelectorAll('.feat-row .editable[contenteditable]').forEach(ft=>{
       ft.addEventListener('input',()=>{
         const idx=Number(ft.closest('li').dataset.feat);
         if(!page.features[idx])page.features[idx]='';
@@ -1344,7 +1398,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
       return (page&&page.sourceFile)?'<section class="print-page wb-print-pdf" data-print-pdf></section>':'<section class="print-page">'+pageHtml(code,false)+'</section>';
     }).join('');
     documentArea.innerHTML=sections;
-    let style=document.getElementById('print-size');if(!style){style=document.createElement('style');style.id='print-size';document.head.append(style)}style.textContent='@media print{@page{size:A4 portrait;margin:0}html,body{background:#fff;margin:0;padding:0}.print-page{position:relative;width:210mm;height:297mm;overflow:hidden;break-after:page;page-break-after:always;break-inside:avoid}.print-page:last-child{break-after:auto;page-break-after:auto}.print-page .page{width:210mm!important;height:297mm!important;min-height:297mm!important;margin:0!important;padding:0!important}.print-page .page-switcher,.print-page .logo-resize-handle,.print-page .img-resize-handle,.print-page .img-delete-btn,.print-page .img-placeholder{display:none!important}.print-page .placed-img{border:none!important}.print-page .placed-img img{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .blue-band{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .order-table th{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-product-pages{width:100%!important;max-width:none!important;min-height:0!important;padding:0!important}.wb-print-pdf canvas{width:210mm!important;height:297mm!important;display:block}}'
+    let style=document.getElementById('print-size');if(!style){style=document.createElement('style');style.id='print-size';document.head.append(style)}style.textContent='@media print{@page{size:A4 portrait;margin:0}html,body{background:#fff;margin:0;padding:0}.print-page{position:relative;width:210mm;height:297mm;overflow:hidden;break-after:page;page-break-after:always;break-inside:avoid}.print-page:last-child{break-after:auto;page-break-after:auto}.print-page .page{width:210mm!important;height:297mm!important;min-height:297mm!important;margin:0!important;padding:0!important}.print-page .page-switcher,.print-page .logo-resize-handle,.print-page .img-resize-handle,.print-page .img-delete-btn,.print-page .img-placeholder{display:none!important}.print-page .placed-img{border:none!important}.print-page .placed-img img{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .blue-bar td{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .order-head td{print-color-adjust:exact;-webkit-print-color-adjust:exact}.print-page .draggable-logo{border:none!important}.print-page .product-table{margin-top:22mm!important}.print-product-pages{width:100%!important;max-width:none!important;min-height:0!important;padding:0!important}.wb-print-pdf canvas{width:210mm!important;height:297mm!important;display:block}}'
     const pdfTargets=[];
     documentArea.querySelectorAll('[data-print-pdf]').forEach((el,i)=>{const code=caseData.products[i][0];pdfTargets.push({el,src:pageFor(code)?.sourceFile});});
     (async()=>{for(const t of pdfTargets){await renderPdfInto(t.el,t.src);}window.print();caseData.selectedPage=savedSelected;renderCurrent();})();

@@ -778,7 +778,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
   document.getElementById('et-remove-row').addEventListener('click',()=>{const rows=document.querySelectorAll('#document .order-data');if(rows.length>1)rows[rows.length-1].remove();});
   document.getElementById('et-add-feat').addEventListener('click',()=>{const list=document.querySelector('#document .feat-row ul');if(!list)return;const li=document.createElement('li');const editor=document.createElement('div');editor.className='editable';editor.contentEditable='true';li.appendChild(editor);list.appendChild(li);editor.focus();});
   document.getElementById('et-reset').addEventListener('click',()=>{if(confirm('确定重置所有编辑？'))location.reload();});
-  document.getElementById('et-print').addEventListener('click',()=>{const pb=document.getElementById('print');if(pb)pb.click();else window.print();});
+  document.getElementById('et-print').addEventListener('click',()=>{console.log('打印按钮被点击，workbench.step=',window.workbench?.step);const pb=document.getElementById('print');if(pb){console.log('触发#print按钮点击');pb.click();}else{console.log('#print按钮不存在，直接window.print()');window.print();}});
   window.editorToolbar=editorToolbar;
   const modal=document.createElement('dialog');modal.id='data-editor';modal.innerHTML='<form id="edit-form"><header><h2 id="edit-title"></h2><button type="button" id="cancel-top" aria-label="关闭编辑">×</button></header><p class="edit-help">填写后点击“保存修改”。切换记录会保留本次草稿；“取消”放弃整次编辑。</p><div id="edit-selector"></div><div id="edit-fields"></div><p id="edit-error" role="alert"></p><footer><button type="button" id="draft-backup">导出草稿备份</button><button type="button" id="cancel-edit">取消</button><button type="submit" class="save-button">保存修改</button></footer></form>';document.body.append(modal);
   let draft=null,step=0,index=0,busy=0,changed=false;
@@ -1278,8 +1278,9 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
     // --- 图片上传 ---
     const placeholder=doc.querySelector('.img-placeholder');
     const imgInput=doc.querySelector('.img-input');
+    console.log('图片上传绑定检查: placeholder=',!!placeholder,'imgInput=',!!imgInput);
     if(placeholder&&imgInput){
-      placeholder.addEventListener('click',()=>imgInput.click());
+      placeholder.addEventListener('click',()=>{console.log('placeholder被点击，触发文件选择');imgInput.click();});
       imgInput.addEventListener('change',e=>{
         const file=e.target.files[0];
         if(!file)return;
@@ -1462,7 +1463,7 @@ const _empty={project:{name:'',issued:'',technician:'',area:'',total:0,headerRow
   if(editorDialog)new MutationObserver(()=>setTimeout(adaptProductEditor,0)).observe(editorDialog,{childList:true,subtree:true,attributes:true,attributeFilter:['open']});
   document.addEventListener('click',event=>{if(event.target.closest('#edit-page-data,#edit-data'))setTimeout(adaptProductEditor,0)},true);
   document.addEventListener('dblclick',event=>{if(window.workbench?.step===3&&event.target.closest('.product-sheet-content'))setTimeout(adaptProductEditor,0)},true);
-  document.getElementById('print').addEventListener('click',event=>{if(window.workbench?.step!==3&&window.workbench?.step!==4)return;event.preventDefault();event.stopImmediatePropagation();printAll()},true);
+  document.getElementById('print').addEventListener('click',event=>{console.log('#print按钮被点击，workbench.step=',window.workbench?.step);if(window.workbench?.step!==3&&window.workbench?.step!==4){console.log('step不是3或4，跳过打印');return;}event.preventDefault();event.stopImmediatePropagation();console.log('开始执行printAll()');printAll();console.log('printAll()执行完成');},true);
   document.addEventListener('dblclick',event=>{if(window.workbench?.step!==3||!event.target.closest('.product-sheet-content'))return;ensurePages(caseData)},true);
   window.addEventListener('viewrender',()=>setTimeout(renderCurrent,0));
   setTimeout(renderCurrent,0);
